@@ -1,0 +1,70 @@
+
+# 実行するタスク設定
+tasks:
+  wp_task:
+    do_make_clean: True
+    do_clustering: True
+    do_make_feat: True
+    do_train: True
+    do_predict: True
+    do_predict_for_eval: True
+    do_visualize: True
+
+
+preprocess:
+  th_annomaly: 60 # 異常検知：許容差分値
+  max_value: 250 # 上限値の設定
+  min_value: 0 # 下限値の設定
+
+feature:
+  recently_num: 10 # 特徴量として使う直近の値
+  n_jobs : 8 # 並列化する数
+  clustering:
+    n_clusters: 4
+    n_init: 100
+    max_iter: 1000
+
+
+
+predict:
+  predict_day: 2 # 何日先を予測するか
+
+
+
+wp_model:
+    model_path: #result/from2022-04-25_to2023-06-01_test_5
+    regression_params:
+      params:
+        task: 'train'
+        boosting_type: 'gbdt'
+        metric: 'mae' 
+        learning_rate: 0.001
+        num_iterations: 50000
+        num_leaves: 64
+        max_depth: -1
+        min_data_in_leaf: 500
+        reg_alpha: 0.3
+        reg_lambda: 0.3
+        bagging_fraction: 0.99
+        bagging_freq: 1
+        min_gain_to_split: 0.0
+        n_jobs: 16
+        verbosity: -1
+      early_stopping_rounds: 300
+      log_eval: 10
+
+clustering:
+    n_clusters: 4
+    kshape:
+      verbose : True
+      n_init: 50
+      max_iter: 1000
+
+
+
+features:
+  valid_days: 56 # 直近何日をvalidとするか
+
+
+
+

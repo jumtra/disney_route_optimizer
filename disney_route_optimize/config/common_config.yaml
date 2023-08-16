@@ -1,0 +1,67 @@
+
+# 共通部分のパラメータ
+common:
+  seed: 3655
+  # ディズニーランド(tdl)orディズニーシー(tds) or both
+  land_type: both
+
+  folder_name: "new_eval2"
+  train_start_date: "2022-04-25"
+  predict_date: "2023-07-26" # 予測実施日
+  visit_time: "09:00"
+  return_time: "19:30"
+
+mlflow:
+  run_id:
+
+
+# 入力ファイル
+input: 
+  input_dir: ./data
+  # raw data の場所
+  path_waittime_dir: ${input.input_dir}/${common.land_type}/wait_time
+  path_weather_dir: ${input.input_dir}/weather
+  path_distance_file: ${input.input_dir}/${common.land_type}/distance.csv
+  path_master_file: disney_route_optimize/config/park_master/${common.land_type}/park_master.csv
+  path_rank_file: disney_route_optimize/config/park_master/${common.land_type}/rank.csv
+
+# 出力ファイル
+output:
+  output_dir: ./result
+  path_cleaned: ${output.output_dir}/preprocessed
+  wp_output:
+    path_wp_dir: ${output.output_dir}/wp_result
+    path_preprocessed_dir: ${output.wp_output.path_wp_dir}/preprocessed
+    path_features_dir: ${output.wp_output.path_wp_dir}/feature
+    path_train_dir: ${output.wp_output.path_wp_dir}/train
+    path_clustering_dir: ${output.wp_output.path_wp_dir}/clustering
+    path_predict_dir: ${output.wp_output.path_wp_dir}/predict
+    path_visualize_dir: ${output.wp_output.path_wp_dir}/visualize
+
+    weather_file: ${output.wp_output.path_preprocessed_dir}/weather.csv
+    waittime_file: ${output.wp_output.path_preprocessed_dir}/waititme.csv
+    features_file: ${output.wp_output.path_features_dir}/features.csv
+    features_test_file: ${output.wp_output.path_features_dir}/features_test.csv
+    path_model: ${output.wp_output.path_train_dir}/model.pickle
+    cat_report_train_file: classification_train_report.csv
+    cat_report_valid_file: classification_valid_report.csv
+    pred_train_file: train_pred.csv
+    pred_valid_file: valid_pred.csv
+    pred_test_file: result_pred.csv
+
+    path_clustering_model: ${output.wp_output.path_clustering_dir}/cluster.json 
+    path_clustering_dict: ${output.wp_output.path_clustering_dir}/attraction2cluster.pickle 
+    path_clustered_waittime: ${output.wp_output.path_clustering_dir}/clustered_waittime.csv 
+    
+  
+
+    
+
+
+  opt_output:
+    path_opt_dir: ${output.output_dir}/opt_result
+  
+
+  
+
+  

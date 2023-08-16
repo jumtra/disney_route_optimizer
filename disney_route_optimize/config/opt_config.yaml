@@ -1,0 +1,35 @@
+
+
+first_opt:
+  objective: 
+    objective_total_visit: True
+
+  constraints:
+    constraint_global_time : True
+    constraint_global_mtz : True
+    constraint_mtz : True
+    constraint_play_time : True
+    constraint_visit_once : True
+    constraint_global_once : True
+    constraint_time_window : True
+
+second_opt:
+  objective: 
+    objective_total_visit: True
+
+  constraints:
+    constraint_global_time : True
+    constraint_mtz : True
+    constraint_play_time : True
+    constraint_visit_once : True
+    constraint_time_window : True
+
+cost:
+  sep_time: 15 # 予測待ち時間の刻み（分）
+  step_time: 0.5 # 1歩の時間（秒）
+  buffer_time: 60 #1アトラクション毎のバッファ(秒)
+
+rank:
+  split_rank : 13 # 最適化段階をどこで区切るか
+  
+
