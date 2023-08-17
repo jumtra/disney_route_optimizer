@@ -1,8 +1,13 @@
 
 
+opt_params:
+  threads: 8
+  timeLimit: 30
+
 first_opt:
   objective: 
     objective_total_visit: True
+    objective_total_popular_visit: False
 
   constraints:
     constraint_global_time : True
@@ -25,11 +30,11 @@ second_opt:
     constraint_time_window : True
 
 cost:
-  sep_time: 15 # 予測待ち時間の刻み（分）
-  step_time: 0.5 # 1歩の時間（秒）
-  buffer_time: 60 #1アトラクション毎のバッファ(秒)
+  sep_time: 15 # 予測待ち時間の刻み（分）# 15固定
+  step_time: 0.7 # 1歩の時間（秒） default = 0.5
+  buffer_time: 300 #1アトラクション毎のバッファ(秒)
 
 rank:
-  split_rank : 13 # 最適化段階をどこで区切るか
+  split_rank : 12 # 最適化段階をどこで区切るか
   
 

@@ -9,6 +9,8 @@ from disney_route_optimize.route_optimize.dataclass.do_time import AttractionTim
 
 ATTRACTION_NAME = str
 
+FILL_VALUE = 12 * 60 * 60
+
 
 @dataclass
 class CostMatrix:
@@ -32,7 +34,7 @@ class CostMatrix:
 
     def __post_init__(self):
         self._set_params()
-        self.list_cost = self.make_cost_matrix()
+        self.list_cost, self.list_wait, self.list_move = self.make_cost_matrix()
 
     def _set_params(self) -> None:
         self.visit_time = self.config_maneger.config.common.visit_time
@@ -41,13 +43,14 @@ class CostMatrix:
         self.sep_time = self.config_maneger.config.cost.sep_time
         self.buffer_time = self.config_maneger.config.cost.buffer_time
 
-    def make_cost_matrix(self) -> list[np.ndarray]:
+    def make_cost_matrix(self) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
         list_cost = []
+        list_wait = []
+        list_move = []
         visit_num = self._get_timenum(self.visit_time)
         return_num = self._get_timenum(self.return_time)
         df_step = self.df_step.loc[self.df_step[self.key_from].isin(self.list_target_cols) & self.df_step[self.key_to].isin(self.list_target_cols)]
 
-        # df_step["movetime"] = df_step[self.key_step] * self.step_time  # 1歩で0.5秒 1分間120歩 歩幅63センチらしい
         dict_col2idx = {col: idx for idx, col in enumerate(df_step.columns)}
 
         self.df_pred = self.df_pred.loc[:, self.df_pred.columns.isin(self.list_target_cols)]
@@ -55,6 +58,8 @@ class CostMatrix:
             dict_pred = self.df_pred.query("numtime == @i")[list(self.df_pred.columns)].to_dict(orient="records")[0]
 
             dict_time = {}
+            dict_wait = {}
+            dict_move = {}
 
             for val in df_step.values:
                 from_name = val[dict_col2idx[self.key_from]]
@@ -68,6 +73,9 @@ class CostMatrix:
                 )
 
                 dict_time[(from_name, to_name)] = time
+                dict_wait[(from_name, to_name)] = dict_pred.get(to_name, 0) * 60
+                dict_move[(from_name, to_name)] = val[dict_col2idx[self.key_step]] * self.step_time
+
                 time = (
                     val[dict_col2idx[self.key_step]] * self.step_time
                     + dict_pred.get(from_name, 0) * 60
@@ -75,15 +83,31 @@ class CostMatrix:
                     + self.buffer_time
                 )
                 dict_time[(to_name, from_name)] = time
+                dict_wait[(to_name, from_name)] = dict_pred.get(from_name, 0) * 60
+                dict_move[(to_name, from_name)] = val[dict_col2idx[self.key_step]] * self.step_time
             keys = list(dict_time.keys())
             values = list(dict_time.values())
-
             # データフレームを作成
             df = pd.DataFrame({self.key_from: [key[0] for key in keys], self.key_to: [key[1] for key in keys], "cost": values})
-            val = df.pivot(index=self.key_from, columns=self.key_to, values="cost").sort_index().T.sort_index().fillna(10000).values
-
+            val = df.pivot(index=self.key_from, columns=self.key_to, values="cost").sort_index().T.sort_index().T.fillna(FILL_VALUE).values
             list_cost.append(val)
-        return list_cost
+
+            # list_wait
+            keys = list(dict_wait.keys())
+            values = list(dict_wait.values())
+            # データフレームを作成
+            df = pd.DataFrame({self.key_from: [key[0] for key in keys], self.key_to: [key[1] for key in keys], "cost": values})
+            val = df.pivot(index=self.key_from, columns=self.key_to, values="cost").sort_index().T.sort_index().T.fillna(FILL_VALUE).values
+            list_wait.append(val)
+
+            # list_move
+            keys = list(dict_move.keys())
+            values = list(dict_move.values())
+            # データフレームを作成
+            df = pd.DataFrame({self.key_from: [key[0] for key in keys], self.key_to: [key[1] for key in keys], "cost": values})
+            val = df.pivot(index=self.key_from, columns=self.key_to, values="cost").sort_index().T.sort_index().T.fillna(FILL_VALUE).values
+            list_move.append(val)
+        return list_cost, list_wait, list_move
 
     def _get_timenum(self, time: str) -> int:
         base_time = pd.to_datetime("9:00")

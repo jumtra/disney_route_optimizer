@@ -11,12 +11,14 @@ from disney_route_optimize.wait_predction.dataclass.do_preprocess import Preproc
 
 config_dir = "disney_route_optimize/config"
 wp_config_path = "wp_config.yaml"
+opt_config_path = "opt_config.yaml"
 common_config_path = "common_config.yaml"
 
 
 def main():
     config_maneger = ConfigManeger.from_yaml(
-        config_yaml_path=wp_config_path,
+        config_wp_yaml_path=wp_config_path,
+        config_opt_yaml_path=opt_config_path,
         common_yaml_path=common_config_path,
         config_dir=config_dir,
     )
@@ -27,10 +29,7 @@ def main():
         train_start_date = config_maneger.config.common.train_start_date
         predict_date = config_maneger.config.common.predict_date
         folder_name = config_maneger.config.common.folder_name
-        path_result = (
-            Path(config_maneger.config.output.output_dir)
-            / f"from{train_start_date}_to{predict_date}_{folder_name}"
-        )
+        path_result = Path(config_maneger.config.output.output_dir) / f"from{train_start_date}_to{predict_date}_{folder_name}"
     config_maneger.config.output.output_dir = str(path_result)
     path_result = Path(config_maneger.config.output.wp_output.path_wp_dir)
     path_result.mkdir(exist_ok=True, parents=True)

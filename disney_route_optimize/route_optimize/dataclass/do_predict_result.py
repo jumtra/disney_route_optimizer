@@ -38,8 +38,8 @@ class PredictResult:
 
         # 縦持ちに変換
         df = df.pivot(index=[self.key_date, self.key_renamed_numtime], columns=self.key_attraction, values="pred").reset_index()
-        df = df.set_index([self.key_date, self.key_renamed_numtime]) / 5
-        self.df_pred = df.round() * 5
+        self.df_pred = df.set_index([self.key_date, self.key_renamed_numtime])  # / 5
+        # self.df_pred = df.round() * 5
 
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         df = make_clean_master(df=df, key_attraction=self.key_attraction)

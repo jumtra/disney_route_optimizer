@@ -5,14 +5,11 @@ common:
   # ディズニーランド(tdl)orディズニーシー(tds) or both
   land_type: both
 
-  folder_name: "new_eval2"
+  folder_name: "both_v1"
   train_start_date: "2022-04-25"
   predict_date: "2023-07-26" # 予測実施日
   visit_time: "09:00"
   return_time: "19:30"
-
-mlflow:
-  run_id:
 
 
 # 入力ファイル
@@ -53,13 +50,13 @@ output:
     path_clustering_dict: ${output.wp_output.path_clustering_dir}/attraction2cluster.pickle 
     path_clustered_waittime: ${output.wp_output.path_clustering_dir}/clustered_waittime.csv 
     
-  
-
-    
-
-
   opt_output:
     path_opt_dir: ${output.output_dir}/opt_result
+    path_optimize: ${output.opt_output.path_opt_dir}/optimize
+    path_plan_file: plan.csv
+    path_time_file: time_matrix.csv
+    path_location_file: location_matrix.csv
+
   
 
   

@@ -37,8 +37,12 @@ class AttractionRank:
 
         self.dict_attraction2rank = {row[dict_col2idx[self.key_attraction]]: row[dict_col2idx[self.key_rank]] for row in df.values}
 
-        self.list_first_rank = df.loc[df[self.key_rank] <= split_rank][self.key_attraction].to_list()
-        self.list_second_rank = df.loc[df[self.key_rank] > split_rank][self.key_attraction].to_list()
+        if split_rank >= df[self.key_rank].max():
+            self.list_first_rank = sorted(df[self.key_attraction].to_list())
+            self.list_second_rank = sorted(df[self.key_attraction].to_list())
+        else:
+            self.list_first_rank = sorted(df.loc[df[self.key_rank] <= split_rank][self.key_attraction].to_list())
+            self.list_second_rank = sorted(df.loc[df[self.key_rank] > split_rank][self.key_attraction].to_list())
         self.df_rank = df
 
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:

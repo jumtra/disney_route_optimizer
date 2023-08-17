@@ -7,6 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.route_optimize.preprocess.rename_attraction_name import DICT_RENAME
 
 logger = getLogger(__name__)
 
@@ -40,18 +41,14 @@ def interpolate_na(
     for _, df in tqdm(dict_date2df.items(), desc="欠損値補完"):
         for _, df_attraction in df.groupby(key_attraction):
             if not all(np.isnan(df_attraction[[key_waittime]].values)):
-                df_temp = df_attraction[[key_waittime]].interpolate(
-                    method="linear", limit_direction="both"
-                )
+                df_temp = df_attraction[[key_waittime]].interpolate(method="linear", limit_direction="both")
                 index = df_temp.index
                 ser_waittime = df_temp[key_waittime].values
                 df_return.loc[index, key_waittime] = ser_waittime
     return df_return.reset_index(drop=True)
 
 
-def make_clean_wait(
-    path_dir: Path, start_date: datetime, end_date: datetime, config_maneger: ConfigManeger
-) -> pd.DataFrame:
+def make_clean_wait(path_dir: Path, start_date: datetime, end_date: datetime, config_maneger: ConfigManeger) -> pd.DataFrame:
     """待ち時間データのクリーニングする関数"""
     logger.info("待ち時間データの前処理")
     list_df = []
@@ -69,17 +66,11 @@ def make_clean_wait(
         df_read["date"] = pd.to_datetime(df_read["date"])
         list_df.append(df_read)
 
-    df_waittime = pd.concat(list_df).melt(
-        id_vars=["index", "date", "weekday", "time"], var_name="attraction", value_name="wait_time"
-    )
+    df_waittime = pd.concat(list_df).melt(id_vars=["index", "date", "weekday", "time"], var_name="attraction", value_name="wait_time")
     df_waittime["day"] = df_waittime["date"].dt.day
     df_waittime["month"] = df_waittime["date"].dt.month
     df_waittime["year"] = df_waittime["date"].dt.year
-    df_waittime["wait_time"] = (
-        df_waittime["wait_time"]
-        .replace({"－": np.nan, "一時運休": np.nan, "計画運休": np.nan, "案内終了": np.nan})
-        .astype(float)
-    )
+    df_waittime["wait_time"] = df_waittime["wait_time"].replace({"－": np.nan, "一時運休": np.nan, "計画運休": np.nan, "案内終了": np.nan}).astype(float)
     #
     df_waittime = df_waittime.rename(columns={"index": "num_time"})
 
@@ -90,12 +81,8 @@ def make_clean_wait(
     df_waittime = detect_annomaly(df_waittime=df_waittime, th_annomaly=th_annomary)
 
     # 上限と下限置き換え
-    df_waittime["wait_time"] = df_waittime["wait_time"].mask(
-        df_waittime["wait_time"] > max_value, np.nan
-    )
-    df_waittime["wait_time"] = df_waittime["wait_time"].mask(
-        df_waittime["wait_time"] < min_value, 0
-    )
+    df_waittime["wait_time"] = df_waittime["wait_time"].mask(df_waittime["wait_time"] > max_value, np.nan)
+    df_waittime["wait_time"] = df_waittime["wait_time"].mask(df_waittime["wait_time"] < min_value, 0)
 
     # 欠損値補間
     df_waittime = interpolate_na(df_waittime=df_waittime)
@@ -117,11 +104,7 @@ def _aggregate_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # 最大値、最小値、平均値、分散を計算して集計結果を追加
     aggregate_df.loc[0] = (
-        [df.at[0, "date"]]
-        + df_processed.max().tolist()
-        + df_processed.min().tolist()
-        + df_processed.mean().tolist()
-        + df_processed.var().tolist()
+        [df.at[0, "date"]] + df_processed.max().tolist() + df_processed.min().tolist() + df_processed.mean().tolist() + df_processed.var().tolist()
     )
 
     # 集計結果のデータフレームを表示
@@ -151,9 +134,7 @@ def make_clean_weather(path_dir: Path, start_date: datetime, end_date: datetime)
 def make_clean_data(config_maneger: ConfigManeger):
     start_date = datetime.strptime(config_maneger.config.common.train_start_date, "%Y-%m-%d")
     end_date = datetime.strptime(config_maneger.config.common.predict_date, "%Y-%m-%d")
-    df_weather = make_clean_weather(
-        Path(config_maneger.config.input.path_weather_dir), start_date, end_date
-    )
+    df_weather = make_clean_weather(Path(config_maneger.config.input.path_weather_dir), start_date, end_date)
 
     if config_maneger.config.common.land_type == "both":
         config_maneger.config.common.land_type = "tdl"
