@@ -1,11 +1,12 @@
 import datetime
-from pathlib import Path
-import urllib.request
-from bs4 import BeautifulSoup
-import pandas as pd
-from tqdm import tqdm
 import time
+import urllib.request
 from logging import getLogger
+from pathlib import Path
+
+import pandas as pd
+from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 logger = getLogger(__name__)
 
@@ -96,7 +97,7 @@ def get_weather_data(dir_data: Path) -> None:
         day = str(date.day).zfill(2)
         file_name = dir_data / f"{date.year}-{month}-{day}.csv"
         if file_name.exists():
-            logger.warning(f"{date.year}-{month}-{day}の天気データ取得をスキップしました")
+            logger.info(f"{date.year}-{month}-{day}の天気データ取得をスキップしました")
             continue
 
         # 対象url（今回は東京）

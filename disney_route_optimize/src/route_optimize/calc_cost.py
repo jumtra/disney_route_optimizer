@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from disney_route_optimize.common.config_maneger import ConfigManeger
 from disney_route_optimize.route_optimize.dataclass.do_cost import CostMatrix
 from disney_route_optimize.route_optimize.dataclass.do_distance import AttractionStepDistance
@@ -9,19 +11,25 @@ from disney_route_optimize.route_optimize.preprocess.step_regression import Regr
 
 
 def calc_cost(config_maneger: ConfigManeger) -> tuple[CostMatrix, CostMatrix]:
+    """優先最適化対象のコスト行列と次点最適化対象のコスト行列を取得する関数"""
     pred = PredictResult(config_maneger=config_maneger)
     attr_pos = AttractionPosition(config_maneger=config_maneger)
     attr_time = AttractionTime(config_maneger=config_maneger)
-    attr_rank = AttractionRank(config_maneger=config_maneger)
     target_attraction = attr_pos.target_attraction
     attr_dis = AttractionStepDistance(config_maneger=config_maneger, target_attraction=target_attraction)
 
+    path_regression = Path(config_maneger.config.output.opt_output.path_regression_dir)
+    path_regression.mkdir(parents=True, exist_ok=True)
     input = RegressionInput(attraction_distance=attr_dis, attraction_position=attr_pos)
 
     result = StepRegression().run(input)
+    StepRegression().visualize(path_folder=path_regression, df_train=result.df_train, df_pred=result.df_pred)
+    result.fit_result.to_df().to_csv(path_regression / config_maneger.config.output.opt_output.path_regression_file, index=False)
 
+    attr_rank = AttractionRank(config_maneger=config_maneger)
     cost_first = CostMatrix(
         list_target_cols=attr_rank.list_first_rank,
+        dict_attraction2rank=attr_rank.dict_attraction2rank,
         config_maneger=config_maneger,
         df_pred=pred.df_pred,
         df_step=result.df_steps,
@@ -29,6 +37,7 @@ def calc_cost(config_maneger: ConfigManeger) -> tuple[CostMatrix, CostMatrix]:
     )
     cost_second = CostMatrix(
         list_target_cols=attr_rank.list_second_rank,
+        dict_attraction2rank=attr_rank.dict_attraction2rank,
         config_maneger=config_maneger,
         df_pred=pred.df_pred,
         df_step=result.df_steps,

@@ -23,6 +23,7 @@ class CostMatrix:
     df_pred: pd.DataFrame
     df_step: pd.DataFrame
     dict_attraction2time: dict[str, float]
+    dict_attraction2rank: dict[str, int]
     list_target_cols: list[str]
 
     key_attraction: str = "attraction_name"
@@ -34,6 +35,7 @@ class CostMatrix:
 
     def __post_init__(self):
         self._set_params()
+        self.list_rank = self._get_list_rank()
         self.list_cost, self.list_wait, self.list_move = self.make_cost_matrix()
 
     def _set_params(self) -> None:
@@ -42,6 +44,11 @@ class CostMatrix:
         self.step_time = self.config_maneger.config.cost.step_time
         self.sep_time = self.config_maneger.config.cost.sep_time
         self.buffer_time = self.config_maneger.config.cost.buffer_time
+
+    def _get_list_rank(self) -> list[int]:
+        self.list_target_cols = sorted(self.list_target_cols)
+        list_rank = [self.dict_attraction2rank[attraction] for attraction in self.list_target_cols]
+        return list_rank
 
     def make_cost_matrix(self) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
         list_cost = []

@@ -35,7 +35,7 @@ def _get_not_exist_date(_date: datetime, dir_data: Path) -> datetime:
     _day = str(_date.day).zfill(2)
     is_exist = Path(dir_data / f"{_year}-{_month}-{_day}_waittime.csv").exists()
     while is_exist:
-        logger.warning(f"{_year}-{_month}-{_day}のデータは既にあります。")
+        logger.info(f"{_year}-{_month}-{_day}のデータは既にあります。")
         _date += datetime.timedelta(days=1)
         _year = _date.year
         _month = str(_date.month).zfill(2)

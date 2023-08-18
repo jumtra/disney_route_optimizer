@@ -1,4 +1,6 @@
+import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,9 +11,13 @@ from ..dataclass.do_distance import AttractionStepDistance
 from ..dataclass.do_position import AttractionPosition
 from ..preprocess.calc_distance import calc_distance
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class RegressionInput:
+    """座標間距離から歩数を予測する回帰モデルの入力データクラス"""
+
     attraction_position: AttractionPosition
     attraction_distance: AttractionStepDistance
     key_actual: str = "steps"  # 実測値
@@ -22,6 +28,7 @@ class RegressionInput:
         self.df_pred = self.make_predict_input()
 
     def make_train_input(self) -> pd.DataFrame:
+        """座標間距離から歩数を予測する回帰の学習入力データ"""
         dict_attr2latlon = self.attraction_position.dict_attraction2pos
 
         dict_col2idx = self.attraction_distance.dict_col2idx
@@ -72,24 +79,34 @@ class RegressionInput:
         return df_pred
 
     def get_train(self):
+        """学習の入力データを取得"""
         X = self.df_train[[self.key_calc_distance]]
         y = self.df_train[[self.key_actual]]
         return X, y
 
     def get_pred(self):
+        """予測の入力データを取得"""
         X = self.df_pred[[self.key_calc_distance]]
         return X
 
 
 @dataclass
 class RegressionFitResult:
+    """回帰式の情報を保存するデータクラス"""
+
     coef: float
     intercept: float
     R2: float
 
+    def to_df(self) -> pd.DataFrame:
+        dict_df = {"coef": [self.coef], "intercept": [self.intercept], "R2": [self.R2]}
+        return pd.DataFrame(dict_df)
+
 
 @dataclass
 class RegressionResult:
+    """回帰の結果を保存するデータクラス"""
+
     df_train: pd.DataFrame
     df_pred: pd.DataFrame
     fit_result: RegressionFitResult
@@ -104,14 +121,16 @@ class StepRegression:
     key_pred: str = "steps"
 
     def fit(self, X: pd.DataFrame, y: pd.DataFrame) -> RegressionFitResult:
+        logger.info("歩数予測モデルの学習")
         self.model = LinearRegression().fit(X=X, y=y)
         return RegressionFitResult(
-            coef=self.model.coef_,
-            intercept=self.model.intercept_,
+            coef=self.model.coef_[0][0],
+            intercept=self.model.intercept_[0],
             R2=round(self.model.score(X, y), 3),
         )
 
     def predict(self, X: pd.DataFrame):
+        logger.info("座標間距離から歩数予測")
         pred = self.model.predict(X)
         return pred
 
@@ -125,9 +144,9 @@ class StepRegression:
 
         return RegressionResult(df_train=df_train, df_pred=df_pred, fit_result=result)
 
-    def visualize(self, df_reg: pd.DataFrame):
-        plt.scatter(df_reg["calc"], df_reg["actual"])
-        plt.plot(df_reg["calc"], df_reg["pred"], color="orange")
+    def visualize(self, path_folder: str | Path, df_train: pd.DataFrame, df_pred: pd.DataFrame):
+        plt.scatter(df_train["calc"], df_train[self.key_pred])
+        plt.plot(df_pred["calc"], df_pred[self.key_pred], color="orange")
         plt.xlabel("calc")
         plt.ylabel("actual")
-        plt.show()
+        plt.savefig(path_folder / "regression.png")

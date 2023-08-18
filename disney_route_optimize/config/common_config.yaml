@@ -6,10 +6,25 @@ common:
   land_type: both
 
   folder_name: "both_v1"
-  train_start_date: "2022-04-25"
+  train_start_date: "2022-04-25" # 学習開始日
   predict_date: "2023-07-26" # 予測実施日
-  visit_time: "09:00"
-  return_time: "19:30"
+  visit_time: "09:00" #来園時刻
+  return_time: "19:30" #退園時刻
+
+# 実行するタスク設定
+tasks:
+  wp_task:
+    do_make_clean: False
+    do_clustering: False
+    do_make_feat: False
+    do_train: False
+    do_predict: False
+    do_predict_for_eval: False
+    do_visualize: False
+  opt_task:
+    do_optimize: True
+    do_visualize: True
+
 
 
 # 入力ファイル
@@ -25,7 +40,6 @@ input:
 # 出力ファイル
 output:
   output_dir: ./result
-  path_cleaned: ${output.output_dir}/preprocessed
   wp_output:
     path_wp_dir: ${output.output_dir}/wp_result
     path_preprocessed_dir: ${output.wp_output.path_wp_dir}/preprocessed
@@ -52,7 +66,12 @@ output:
     
   opt_output:
     path_opt_dir: ${output.output_dir}/opt_result
-    path_optimize: ${output.opt_output.path_opt_dir}/optimize
+    path_input_dir: ${output.opt_output.path_opt_dir}/input
+    path_first_optimize_dir: ${output.opt_output.path_opt_dir}/first_optimize
+    path_second_optimize_dir: ${output.opt_output.path_opt_dir}/second_optimize
+    path_regression_dir: ${output.opt_output.path_opt_dir}/regression
+
+    path_regression_file: regression_result.csv
     path_plan_file: plan.csv
     path_time_file: time_matrix.csv
     path_location_file: location_matrix.csv

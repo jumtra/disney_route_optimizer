@@ -19,9 +19,7 @@ class Cluster:
     def __post_init__(self):
         clustering_dir = Path(self.config_maneger.config.output.wp_output.path_clustering_dir)
         path_model = Path(self.config_maneger.config.output.wp_output.path_clustering_model)
-        path_clustered_csv = Path(
-            self.config_maneger.config.output.wp_output.path_clustered_waittime
-        )
+        path_clustered_csv = Path(self.config_maneger.config.output.wp_output.path_clustered_waittime)
         path_cluster_dict = Path(self.config_maneger.config.output.wp_output.path_clustering_dict)
         self.model = Clustering(self.config_maneger)
         path_waittime = Path(self.config_maneger.config.output.wp_output.waittime_file)
@@ -31,9 +29,7 @@ class Cluster:
             path_csv = self.config_maneger.config.output.wp_output.waittime_file
             df = pd.read_csv(path_csv)
             df["date"] = pd.to_datetime(df["date"])
-            valid_date = df["date"].max() - timedelta(
-                days=self.config_maneger.config.features.valid_days
-            )
+            valid_date = df["date"].max() - timedelta(days=self.config_maneger.config.valid.valid_days)
             df_train = df.loc[df["date"] < valid_date]
             dict_attr2cluster = self.model.train(df_train)
             self.model.save_model()

@@ -24,18 +24,10 @@ class Features:
         path_feat = Path(self.config_maneger.config.output.wp_output.features_file)
         path_test = Path(self.config_maneger.config.output.wp_output.features_test_file)
 
-        predict_start_date = datetime.strptime(
-            self.config_maneger.config.common.predict_date, "%Y-%m-%d"
-        )
-        if (
-            self.config_maneger.config.tasks.wp_task.do_make_feat
-            or not path_feat.exists()
-            or not path_test.exists()
-        ):
+        predict_start_date = datetime.strptime(self.config_maneger.config.common.predict_date, "%Y-%m-%d")
+        if self.config_maneger.config.tasks.wp_task.do_make_feat or not path_feat.exists() or not path_test.exists():
             logger.info("特徴量を作成")
-            Path(self.config_maneger.config.output.wp_output.path_features_dir).mkdir(
-                exist_ok=True, parents=True
-            )
+            Path(self.config_maneger.config.output.wp_output.path_features_dir).mkdir(exist_ok=True, parents=True)
             df, df_test = make_features(
                 df_waittime=self.preprocessed_obj.df_waittime,
                 df_weather=self.preprocessed_obj.df_weather,
@@ -58,16 +50,12 @@ class Features:
 
         df_test["date"] = pd.to_datetime(df_test["date"])
         dict_dtype = {feat: "category" for feat in list(df_test.columns) if "featcat_" in feat}
-        dict_dtype.update(
-            {feat: "float32" for feat in list(df_test.columns) if "featnum_" in feat}
-        )
+        dict_dtype.update({feat: "float32" for feat in list(df_test.columns) if "featnum_" in feat})
         dict_dtype.update({feat: "bool" for feat in list(df_test.columns) if "featbool_" in feat})
         self.df_test = df_test.astype(dict_dtype)
 
         list_feat = [feat for feat in list(df.columns) if "feat" in feat]
-        valid_date = df["date"].max() - timedelta(
-            days=self.config_maneger.config.features.valid_days
-        )
+        valid_date = df["date"].max() - timedelta(days=self.config_maneger.config.valid.valid_days)
         df_train = df.loc[df["date"] < valid_date]
         df_valid = df.loc[df["date"] >= valid_date]
 

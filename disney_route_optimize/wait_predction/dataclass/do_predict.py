@@ -23,33 +23,23 @@ class Predictor:
         predict_dir = Path(self.config_maneger.config.output.wp_output.path_predict_dir)
         path_train = predict_dir / self.config_maneger.config.output.wp_output.pred_train_file
         path_valid = predict_dir / self.config_maneger.config.output.wp_output.pred_valid_file
-        if (
-            self.config_maneger.config.tasks.wp_task.do_predict
-            or (not path_train.exists())
-            or (not path_valid.exists())
-        ):
+        if self.config_maneger.config.tasks.wp_task.do_predict or (not path_train.exists()) or (not path_valid.exists()):
             self.model = LGBM(self.config_maneger)
             self.model.load_model(Path(self.config_maneger.config.output.wp_output.path_model))
             cluster_num = self.model.cluster_num
             predict_dir.mkdir(exist_ok=True, parents=True)
 
             logger.info("学習データの予測")
-            df_train = self._get_predict_features(
-                cluster_num=cluster_num, dict_data=self.features.dict_train
-            )
+            df_train = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_train)
             df_train.to_csv(path_train, index=False)
 
             logger.info("評価データの予測")
-            df_valid = self._get_predict_features(
-                cluster_num=cluster_num, dict_data=self.features.dict_valid
-            )
+            df_valid = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_valid)
             df_valid.to_csv(path_valid, index=False)
 
             logger.info("テストデータの予測")
-            df_test = self._get_predict_features(
-                cluster_num=cluster_num, dict_data=self.features.dict_test
-            )
-            df_test.to_csv(predict_dir / "result.csv", index=False)
+            df_test = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_test)
+            df_test.to_csv(predict_dir / self.config_maneger.config.output.wp_output.pred_test_file, index=False)
 
         else:
             logger.info("予測をskip")
@@ -88,9 +78,7 @@ class Predictor:
                 list_pred = []
 
                 for row in df_temp.values:
-                    list_feat = self._get_feat(
-                        list_pred, recently_num=self.config_maneger.config.feature.recently_num
-                    )
+                    list_feat = self._get_feat(list_pred, recently_num=self.config_maneger.config.feature.recently_num)
                     row[target_i] = list_feat
                     list_pred.append(self.model.predict(cluster_i, np.array([row[feat_i]]))[0])
                 df_temp["pred"] = list_pred
@@ -99,9 +87,7 @@ class Predictor:
             df_result = pd.concat(list_df).reset_index(drop=True)
             return df_result
 
-        list_df_result = Parallel(n_jobs=-1)(
-            delayed(process_cluster)(cluster_i) for cluster_i in range(cluster_num)
-        )
+        list_df_result = Parallel(n_jobs=-1)(delayed(process_cluster)(cluster_i) for cluster_i in range(cluster_num))
         df_result = pd.concat([df for df in list_df_result if df is not None])
 
         return df_result

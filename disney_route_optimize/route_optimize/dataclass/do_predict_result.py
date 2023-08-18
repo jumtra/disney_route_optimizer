@@ -42,5 +42,6 @@ class PredictResult:
         # self.df_pred = df.round() * 5
 
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """アトラクション名を正規化"""
         df = make_clean_master(df=df, key_attraction=self.key_attraction)
         return df

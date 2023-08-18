@@ -10,6 +10,7 @@ import pandas as pd
 
 from disney_route_optimize.common.config_maneger import ConfigManeger
 
+from .metrics import rmsle
 from .save_model import get_bestiter_model
 
 logger = logging.getLogger(__name__)
@@ -34,21 +35,28 @@ class LGBM:
 
     def _set_cfg(self):
         self.params = dict(self.config_maneger.config.wp_model.regression_params.params)
-        self.early_stopping_rounds = (
-            self.config_maneger.config.wp_model.regression_params.early_stopping_rounds
-        )  # アーリーストッピング設定
+        self.early_stopping_rounds = self.config_maneger.config.wp_model.regression_params.early_stopping_rounds  # アーリーストッピング設定
         self.log_eval = self.config_maneger.config.wp_model.regression_params.log_eval
         self.cluster_num = self.config_maneger.config.clustering.n_clusters
+
+    def _get_metrics(self):
+        metrics_name = self.config_maneger.config.wp_model.regression_params.custom_metrics
+        dict_metrics = {"rmsle": rmsle}
+        metrics = dict_metrics.get(metrics_name, None)
+        return metrics
 
     def train_model(self, X_train, y_train, X_valid, y_valid) -> tuple[lgb.Booster, dict]:
         lgb_train = lgb.Dataset(X_train, y_train)
         lgb_valid = lgb.Dataset(X_valid, y_valid, reference=lgb_train)
         history = {}
+        metrics = self._get_metrics()
+
         model = lgb.train(
             params=self.params,  # ハイパーパラメータをセット
             train_set=lgb_train,  # 訓練データを訓練用にセット
             valid_sets=[lgb_train, lgb_valid],  # 訓練データとテストデータをセット
             valid_names=["Train", "Valid"],  # データセットの名前をそれぞれ設定
+            feval=metrics,
             callbacks=[
                 lgb.early_stopping(stopping_rounds=self.early_stopping_rounds, verbose=True),
                 lgb.log_evaluation(self.log_eval),
@@ -73,9 +81,7 @@ class LGBM:
 
             model, eval_result = self.train_model(train_X, train_y, valid_X, valid_y)
 
-            self._clustered_model_collection.add_cluster_train_result(
-                model=model, eval_result=eval_result
-            )
+            self._clustered_model_collection.add_cluster_train_result(model=model, eval_result=eval_result)
         logger.info(f"学習処理終了")
 
         return
@@ -126,9 +132,7 @@ class LGBM:
         # 特徴量の重要度をDataFrameに変換
         df_importance = pd.DataFrame({"feature": feature_names, "importance": feature_importance})
 
-        df_importance.to_csv(
-            train_dir / f"feature_importance_cluster{cluster_num}.csv", index=False
-        )
+        df_importance.to_csv(train_dir / f"feature_importance_cluster{cluster_num}.csv", index=False)
 
         # metric
         fig, ax = plt.subplots()
