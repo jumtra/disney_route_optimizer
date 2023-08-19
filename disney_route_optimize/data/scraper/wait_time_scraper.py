@@ -29,7 +29,9 @@ def _get_wait_time(list_table):
 
 
 def _get_not_exist_date(_date: datetime, dir_data: Path) -> datetime:
-    """データが存在しない起点を捜索する関数"""
+    """データが存在しない起点を捜索する関数
+    連続してデータが存在しない場合のみ処理が止まるように設計
+    """
     _year = _date.year
     _month = str(_date.month).zfill(2)
     _day = str(_date.day).zfill(2)

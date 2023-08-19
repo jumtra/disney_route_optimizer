@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Cluster:
+    """kshapeのクラスタリング結果を保存するデータクラス"""
+
     config_maneger: ConfigManeger
 
     def __post_init__(self):
@@ -23,7 +25,8 @@ class Cluster:
         path_cluster_dict = Path(self.config_maneger.config.output.wp_output.path_clustering_dict)
         self.model = Clustering(self.config_maneger)
         path_waittime = Path(self.config_maneger.config.output.wp_output.waittime_file)
-        if self.config_maneger.config.tasks.wp_task.do_clustering or (not path_model.exists()):
+        is_only_predict = self.config_maneger.config.common.is_only_predict
+        if self.config_maneger.config.tasks.wp_task.do_clustering or (not path_model.exists()) or is_only_predict:
             logger.info("時系列クラスタリング")
             clustering_dir.mkdir(exist_ok=True, parents=True)
             path_csv = self.config_maneger.config.output.wp_output.waittime_file
@@ -31,8 +34,16 @@ class Cluster:
             df["date"] = pd.to_datetime(df["date"])
             valid_date = df["date"].max() - timedelta(days=self.config_maneger.config.valid.valid_days)
             df_train = df.loc[df["date"] < valid_date]
-            dict_attr2cluster = self.model.train(df_train)
-            self.model.save_model()
+
+            if is_only_predict:
+                logger.info("学習をskip")
+                self.model.load_model()
+
+                with open(path_cluster_dict, "rb") as file:
+                    dict_attr2cluster = pickle.load(file)
+            else:
+                dict_attr2cluster = self.model.train(df_train)
+                self.model.save_model()
 
             df = self.model.add_cluster_col(df, dict_attr2cluster)
             df.to_csv(path_clustered_csv)

@@ -1,16 +1,4 @@
 
-# 共通部分のパラメータ
-common:
-  seed: 3655
-  # ディズニーランド(tdl)orディズニーシー(tds) or both
-  land_type: both
-
-  folder_name: "both_v1"
-  train_start_date: "2022-04-25" # 学習開始日
-  predict_date: "2023-07-26" # 予測実施日
-  visit_time: "09:00" #来園時刻
-  return_time: "19:30" #退園時刻
-
 # 実行するタスク設定
 tasks:
   wp_task:
@@ -24,6 +12,28 @@ tasks:
   opt_task:
     do_optimize: True
     do_visualize: True
+
+# 共通部分のパラメータ
+common:
+  seed: 3655
+  # ディズニーランド(tdl)orディズニーシー(tds) or both
+  land_type: both
+
+  folder_name: "test"
+  load_from: #"result/from2022-04-25_to2023-08-17_both_v1" # 学習済みモデルをloadする場合は指定 
+
+  train_start_date: "2022-4-25" # 学習開始日
+  predict_date: "2023-08-17" # 予測実施日
+  visit_date: "2023-08-19" #来園予定日
+  visit_time: "09:00" #来園時刻
+  return_time: "20:30" #退園時刻
+
+  is_only_predict: False
+  is_train_predict: True # 学習データに対する予測を行うか 
+  is_valid_predict: True # 評価データに対する予測を行うか 
+  
+  cpu_level: "high" #["high" "middle" "low"]
+  cpu_core: 
 
 
 

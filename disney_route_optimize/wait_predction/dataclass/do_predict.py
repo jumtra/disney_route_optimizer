@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Predictor:
+    """予測結果を保持するデータクラス"""
+
     config_maneger: ConfigManeger
     features: Features
 
@@ -23,28 +26,43 @@ class Predictor:
         predict_dir = Path(self.config_maneger.config.output.wp_output.path_predict_dir)
         path_train = predict_dir / self.config_maneger.config.output.wp_output.pred_train_file
         path_valid = predict_dir / self.config_maneger.config.output.wp_output.pred_valid_file
-        if self.config_maneger.config.tasks.wp_task.do_predict or (not path_train.exists()) or (not path_valid.exists()):
+        path_test = predict_dir / self.config_maneger.config.output.wp_output.pred_test_file
+        if self.config_maneger.config.tasks.wp_task.do_predict or (not path_test.exists()):
             self.model = LGBM(self.config_maneger)
             self.model.load_model(Path(self.config_maneger.config.output.wp_output.path_model))
             cluster_num = self.model.cluster_num
             predict_dir.mkdir(exist_ok=True, parents=True)
 
-            logger.info("学習データの予測")
-            df_train = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_train)
-            df_train.to_csv(path_train, index=False)
+            if self.config_maneger.config.common.is_train_predict and (not path_train.exists()):
+                logger.info("学習データの予測")
+                df_train = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_train)
+                df_train.to_csv(path_train, index=False)
+                self.df_train = pd.read_csv(path_train)
+            else:
+                self.df_train = pd.DataFrame()
+                logger.info("学習データの予測をskip")
 
-            logger.info("評価データの予測")
-            df_valid = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_valid)
-            df_valid.to_csv(path_valid, index=False)
+            if self.config_maneger.config.common.is_valid_predict and (not path_valid.exists()):
+                logger.info("評価データの予測")
+                df_valid = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_valid)
+                df_valid.to_csv(path_valid, index=False)
+                self.df_valid = pd.read_csv(path_valid)
+            else:
+                self.df_valid = pd.DataFrame()
+                logger.info("評価データの予測をskip")
 
             logger.info("テストデータの予測")
             df_test = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_test)
-            df_test.to_csv(predict_dir / self.config_maneger.config.output.wp_output.pred_test_file, index=False)
+            df_test["date"] = df_test["date"] + timedelta(days=self.config_maneger.config.predict.predict_day)
+            df_test.to_csv(path_test, index=False)
 
         else:
             logger.info("予測をskip")
-        self.df_train = pd.read_csv(path_train)
-        self.df_valid = pd.read_csv(path_valid)
+        if self.config_maneger.config.common.is_train_predict or path_train.exists():
+            self.df_train = pd.read_csv(path_train)
+        if self.config_maneger.config.common.is_valid_predict or path_valid.exists():
+            self.df_valid = pd.read_csv(path_valid)
+
         return
 
     def _get_predict_features(self, cluster_num, dict_data):
@@ -89,6 +107,8 @@ class Predictor:
 
         list_df_result = Parallel(n_jobs=-1)(delayed(process_cluster)(cluster_i) for cluster_i in range(cluster_num))
         df_result = pd.concat([df for df in list_df_result if df is not None])
+        list_col = [col for col in list(df_result.columns) if "feat" not in col] + ["featcat_numtime"]
+        df_result = df_result[list_col].rename(columns={"featcat_numtime": "numtime"})
 
         return df_result
 

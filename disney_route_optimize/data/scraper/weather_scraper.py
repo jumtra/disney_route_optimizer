@@ -89,9 +89,7 @@ def get_weather_data(dir_data: Path) -> None:
     #            "風速", "風向", "日照時間", "全天日射量", "降雪", "積雪"]
 
     date = start_date
-    for date in tqdm(
-        pd.date_range(start=start_date, end=end_date, freq="D"), desc="Get weather data"
-    ):
+    for date in tqdm(pd.date_range(start=start_date, end=end_date, freq="D"), desc="Get weather data"):
         w_data = []
         month = str(date.month).zfill(2)
         day = str(date.day).zfill(2)
@@ -101,17 +99,21 @@ def get_weather_data(dir_data: Path) -> None:
             continue
 
         # 対象url（今回は東京）
-        url = (
-            "http://www.data.jma.go.jp/obd/stats/etrn/view/hourly_s1.php?"
-            "prec_no=44&block_no=47662&year=%d&month=%d&day=%d&view="
-            % (date.year, date.month, date.day)
+        url = "http://www.data.jma.go.jp/obd/stats/etrn/view/hourly_s1.php?" "prec_no=44&block_no=47662&year=%d&month=%d&day=%d&view=" % (
+            date.year,
+            date.month,
+            date.day,
         )
         data_per_day = scraping(url, date)
 
         for dpd in data_per_day:
             w_data.append(dpd)
 
-        pd.DataFrame(w_data, columns=fields).to_csv(file_name, index=False)
+        df_weather = pd.DataFrame(w_data, columns=fields)
+        if df_weather.empty:
+            logger.info(f"{date.year}-{month}-{day}の天気データが存在しません")
+        else:
+            df_weather.to_csv(file_name, index=False)
         time.sleep(1)
 
 

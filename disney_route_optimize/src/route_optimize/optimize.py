@@ -31,7 +31,7 @@ def optimize(config_maneger: ConfigManeger) -> None:
             is_not_solve = optimize_core(config_maneger=config_maneger, cost=cost_first, is_first=True)
             if is_not_solve:
                 config_maneger.config.rank.split_rank -= 1
-            cost_first, cost_second = calc_cost(config_maneger=config_maneger)
+                cost_first, cost_second = calc_cost(config_maneger=config_maneger)
         # Step2 次点最適化
         # TODO 他に追加できるアトラクションを探索
     else:
@@ -93,6 +93,7 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
         )
 
         logger.info("最適化結果を保存")
+        path_optimize = Path(path_optimize) / str(config_maneger.config.common.land_type)
         Path(path_optimize).mkdir(parents=True, exist_ok=True)
         df_time.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_time_file)
         df_location.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_location_file)

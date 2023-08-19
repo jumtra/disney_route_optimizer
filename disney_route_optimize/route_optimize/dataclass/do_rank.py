@@ -30,7 +30,7 @@ class AttractionRank:
         path_rank = Path(self.config_maneger.config.input.path_rank_file)
         df_rank = pd.read_csv(path_rank)
         df = self.clean_data(df_rank)
-        df = df_rank.sort_values("rank").reset_index(drop=True)
+        df = df_rank.sort_values(self.key_rank).reset_index(drop=True)
         # 順位がない場合は名前順で順位をつける
         df[self.key_rank] = np.arange(1, df_rank.shape[0] + 1)
         dict_col2idx = {col: idx for idx, col in enumerate(list(df.columns))}

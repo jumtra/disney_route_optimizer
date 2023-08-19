@@ -15,18 +15,14 @@ from .feature_waittime import make_waittime_featuers
 from .feature_weather import make_dict_weather_features
 
 
-def make_now_waittime_features(
-    dict_numtime2target: dict[int, float], num_time: int, is_test: bool, recently_num: int = 5
-):
+def make_now_waittime_features(dict_numtime2target: dict[int, float], num_time: int, is_test: bool, recently_num: int = 5):
     list_name = []
     list_feat = []
 
     if is_test:
         list_recently = [np.nan for _ in range(recently_num)]
     else:
-        list_recently_target = [
-            value for i, value in enumerate(list(dict_numtime2target.values())) if i < num_time
-        ]
+        list_recently_target = [value for i, value in enumerate(list(dict_numtime2target.values())) if i < num_time]
         if len(list_recently_target) < recently_num:
             missing_num = recently_num - len(list_recently_target)
             list_recently = [np.nan for _ in range(missing_num)] + list_recently_target
@@ -62,9 +58,7 @@ def make_dict_target(
     for col_attr, df_attr in df_waittime.groupby([key_attraction]):
         dict_date = {}
         for col_date, df_date in df_attr.groupby([key_date]):
-            dict_date[col_date] = (
-                df_date[[key_numtime, key_waittime]].set_index(key_numtime).to_dict()[key_waittime]
-            )
+            dict_date[col_date] = df_date[[key_numtime, key_waittime]].set_index(key_numtime).to_dict()[key_waittime]
         dict_target[col_attr] = dict_date
     return dict_target
 
@@ -92,10 +86,7 @@ def make_features(
     dict_target = make_dict_target(df_waittime=df_waittime)
     dict_dayoff_features = make_dayoff_features(list_date, predict_day)
     dict_weather_featuers = make_dict_weather_features(df_weather=df_weather)
-    dict_feat_attraction2int = {
-        attraction: attr_i
-        for attr_i, attraction in enumerate(df_waittime[key_attraction].unique())
-    }
+    dict_feat_attraction2int = {attraction: attr_i for attr_i, attraction in enumerate(df_waittime[key_attraction].unique())}
 
     def process_attraction(attraction_name, df_attraction):
         feature_columns = [
@@ -117,15 +108,10 @@ def make_features(
             "featnum_global_std",
         ]
         is_get_col = False
-        dict_attr2agg = (
-            df_attraction[[key_waittime]]
-            .aggregate({"max", "min", "mean", "median", "var", "std"})
-            .to_dict()[key_waittime]
-        )
+        dict_attr2agg = df_attraction[[key_waittime]].aggregate({"max", "min", "mean", "median", "var", "std"}).to_dict()[key_waittime]
         dict_date2df = {date: df for date, df in df_attraction.groupby(key_date)}
         dict_numtime2df = {
-            num_time: df[[key_date, key_waittime]].set_index(key_date).sort_index()
-            for num_time, df in df_attraction.groupby(key_numtime)
+            num_time: df[[key_date, key_waittime]].set_index(key_date).sort_index() for num_time, df in df_attraction.groupby(key_numtime)
         }
         dict_waittime_features = make_waittime_featuers(list_date, dict_numtime2df, predict_day)
         dict_target_value = dict_target[attraction_name]
@@ -141,18 +127,13 @@ def make_features(
             for row in df_y.to_dict(orient="index").values():
                 num_time = row[key_numtime]
                 cluster = row[key_cluster]
-                dict_numtime2target = dict_target_value.get(
-                    pd.to_datetime(target_date) + timedelta(days=predict_day), None
-                )
+                dict_numtime2target = dict_target_value.get(pd.to_datetime(target_date) + timedelta(days=predict_day), None)
                 if dict_numtime2target is None:
                     wait_time = np.nan
                 else:
                     wait_time = dict_numtime2target.get(int(num_time), np.nan)
 
-                if np.isnan(wait_time) and (
-                    (pd.to_datetime(target_date) + timedelta(days=predict_day))
-                    <= pd.to_datetime(predict_start_date)
-                ):
+                if np.isnan(wait_time) and ((pd.to_datetime(target_date) + timedelta(days=predict_day)) <= pd.to_datetime(predict_start_date)):
                     continue
 
                 list_x = [
@@ -175,10 +156,7 @@ def make_features(
                 ]
                 feat_waittime = dict_waittime_features[target_date.date()][num_time]
 
-                is_test = (
-                    predict_start_date.date()
-                    < (pd.to_datetime(target_date) + timedelta(days=predict_day)).date()
-                )
+                is_test = predict_start_date.date() < (pd.to_datetime(target_date) + timedelta(days=predict_day)).date()
                 feat_recent, feat_name = make_now_waittime_features(
                     dict_numtime2target,
                     num_time=num_time,
@@ -205,9 +183,7 @@ def make_features(
                 if all(np.isnan(list(feat_weather.values()))):
                     continue
 
-                if sum(np.isnan(list(feat_waittime.values()))) >= int(
-                    len(list(feat_waittime.values())) * 0.2
-                ):
+                if sum(np.isnan(list(feat_waittime.values()))) >= int(len(list(feat_waittime.values())) * 0.9):
                     continue
 
                 list_x.extend(list(feat_waittime.values()))
@@ -221,11 +197,9 @@ def make_features(
                     list_feat.append(list_x)
         return list_feat, list_test, feature_columns
 
-    result = Parallel(n_jobs=n_jobs)(
+    result = Parallel(n_jobs=int(n_jobs / 4))(
         delayed(process_attraction)(attraction_name, df_attraction)
-        for attraction_name, df_attraction in tqdm(
-            df_waittime.groupby(key_attraction), desc="make_features"
-        )
+        for attraction_name, df_attraction in tqdm(df_waittime.groupby(key_attraction), desc="make_features")
     )
     list_feat = []
     list_test = []

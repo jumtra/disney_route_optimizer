@@ -1,7 +1,7 @@
 
 
 opt_params:
-  threads: 8
+  threads: ${common.cpu_core}
   timeLimit: 30
 
 first_opt:

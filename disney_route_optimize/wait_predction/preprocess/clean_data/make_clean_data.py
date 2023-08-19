@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 from logging import getLogger
 from pathlib import Path
@@ -19,6 +20,7 @@ def detect_annomaly(
     key_attraction: str = "attraction",
     key_waittime: str = "wait_time",
 ) -> pd.DataFrame:
+    """閾値(th_annomaly)以上の待ち時間の段差を欠損値とする"""
     df_return = df_waittime.copy()
     dict_date2df = {date: df for date, df in df_waittime.groupby(key_date)}
     for _, df in tqdm(dict_date2df.items(), desc="異常検知"):
@@ -36,6 +38,7 @@ def interpolate_na(
     key_attraction: str = "attraction",
     key_waittime: str = "wait_time",
 ) -> pd.DataFrame:
+    """待ち時間の欠損値をアトラクション毎に線形内挿外挿補完"""
     df_return = df_waittime.copy()
     dict_date2df = {date: df for date, df in df_waittime.groupby(key_date)}
     for _, df in tqdm(dict_date2df.items(), desc="欠損値補完"):
@@ -90,6 +93,7 @@ def make_clean_wait(path_dir: Path, start_date: datetime, end_date: datetime, co
 
 
 def _aggregate_df(df: pd.DataFrame) -> pd.DataFrame:
+    """天気データを日単位で集約して基本統計量を取得"""
     # dateとtimeのカラムを除外したデータフレームを作成
     df_processed = df.copy().drop(columns=["date", "time"])
 
@@ -132,34 +136,33 @@ def make_clean_weather(path_dir: Path, start_date: datetime, end_date: datetime)
 
 
 def make_clean_data(config_maneger: ConfigManeger):
+    """ディズニーランドとディズニーシーのデータを前処理"""
     start_date = datetime.strptime(config_maneger.config.common.train_start_date, "%Y-%m-%d")
     end_date = datetime.strptime(config_maneger.config.common.predict_date, "%Y-%m-%d")
     df_weather = make_clean_weather(Path(config_maneger.config.input.path_weather_dir), start_date, end_date)
 
-    if config_maneger.config.common.land_type == "both":
-        config_maneger.config.common.land_type = "tdl"
-        df_waittime_tdl = make_clean_wait(
-            Path(config_maneger.config.input.path_waittime_dir),
-            start_date,
-            end_date,
-            config_maneger,
-        )
-        config_maneger.config.common.land_type = "tds"
-        df_waitime_tds = make_clean_wait(
-            Path(config_maneger.config.input.path_waittime_dir),
-            start_date,
-            end_date,
-            config_maneger,
-        )
-        df_waittime = pd.concat([df_waittime_tdl, df_waitime_tds], axis=0).reset_index(drop=True)
-    else:
-        df_waittime = make_clean_wait(
-            Path(config_maneger.config.input.path_waittime_dir),
-            start_date,
-            end_date,
-            config_maneger,
-        )
+    # config_maneger内のland_typeを保持
+    cfg_land_type = copy.deepcopy(config_maneger.config.common.land_type)
 
-    # df_master = make_clean_master(Path(config_maneger.config.input.path_master_file))
+    # ディズニーランドの前処理
+    config_maneger.config.common.land_type = "tdl"
+    df_waittime_tdl = make_clean_wait(
+        Path(config_maneger.config.input.path_waittime_dir),
+        start_date,
+        end_date,
+        config_maneger,
+    )
+    # ディズニーシーの前処理
+    config_maneger.config.common.land_type = "tds"
+    df_waitime_tds = make_clean_wait(
+        Path(config_maneger.config.input.path_waittime_dir),
+        start_date,
+        end_date,
+        config_maneger,
+    )
+    df_waittime = pd.concat([df_waittime_tdl, df_waitime_tds], axis=0).reset_index(drop=True)
+
+    # land_typeを元に戻す
+    config_maneger.config.common.land_type = cfg_land_type
 
     return df_weather, df_waittime

@@ -21,25 +21,21 @@ class PredictResult:
     df_pred: pd.DataFrame = field(default_factory=pd.DataFrame)
     key_attraction: str = "attraction_name"
     key_date: str = "date"
-    key_numtime: str = "featcat_numtime"
+    key_numtime: str = "numtime"
     key_renamed_numtime: str = "numtime"
 
     def __post_init__(self):
         df_pred = pd.read_csv(
             Path(self.config_maneger.config.output.wp_output.path_predict_dir) / self.config_maneger.config.output.wp_output.pred_test_file
         )
+        visit_date = self.config_maneger.config.common.visit_date
+        df_pred = df_pred.query("date == @visit_date")
         df = self.clean_data(df=df_pred)
-        list_col = [col for col in list(df.columns) if "feat" not in col] + [self.key_numtime]
-        df = (
-            df[list_col]
-            .sort_values(by=[self.key_attraction, self.key_date, self.key_numtime])
-            .rename(columns={self.key_numtime: self.key_renamed_numtime})
-        )
+        df = df.sort_values(by=[self.key_attraction, self.key_date, self.key_numtime])
 
         # 縦持ちに変換
-        df = df.pivot(index=[self.key_date, self.key_renamed_numtime], columns=self.key_attraction, values="pred").reset_index()
-        self.df_pred = df.set_index([self.key_date, self.key_renamed_numtime])  # / 5
-        # self.df_pred = df.round() * 5
+        df = df.pivot(index=[self.key_date, self.key_numtime], columns=self.key_attraction, values="pred").reset_index()
+        self.df_pred = df.set_index([self.key_date, self.key_numtime])
 
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """アトラクション名を正規化"""

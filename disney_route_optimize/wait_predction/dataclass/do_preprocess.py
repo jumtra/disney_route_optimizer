@@ -1,18 +1,18 @@
 import logging
-import pandas as pd
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import pandas as pd
+
 from disney_route_optimize.common.config_maneger import ConfigManeger
-from disney_route_optimize.wait_predction.preprocess.clean_data.make_clean_data import (
-    make_clean_data,
-)
+from disney_route_optimize.wait_predction.preprocess.clean_data.make_clean_data import make_clean_data
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class Preprocess:
+    """前処理結果を保持するデータクラス"""
     config_maneger: ConfigManeger | None = None
 
     def __post_init__(self):
