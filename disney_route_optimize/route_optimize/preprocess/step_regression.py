@@ -118,7 +118,27 @@ class RegressionResult:
         df_replaced = df_steps.copy()
         df_replaced[self.key_from], df_replaced[self.key_to] = df_replaced[self.key_to], df_replaced[self.key_from]
         df_step = pd.concat([df_steps, df_replaced]).drop_duplicates([self.key_from, self.key_to]).reset_index(drop=True)
+        df_step = self._change_move_attraction(df_step)
         self.df_steps = df_step
+
+    def _change_move_attraction(self, df_step: pd.DataFrame) -> pd.DataFrame:
+        """ディズニーシーの移動アトラクションを移動コストに反映"""
+        move_attraction = {
+            "レールウェイ(ポート)": "レールウェイ(フロント)",
+            "レールウェイ(フロント)": "レールウェイ(ポート)",
+            "スチーマーライン(ハーバー)": "スチーマーライン(ロスト)",
+            "スチーマーライン(ロスト)": "スチーマーライン(ハーバー)",
+        }
+
+        def swap_attractions(row):
+            if row[self.key_from] == row[self.key_to]:
+                return move_attraction.get(row[self.key_from], row[self.key_from])
+            else:
+                return row[self.key_to]
+
+        df_step[self.key_from] = df_step[self.key_from].replace(move_attraction)
+        df_step[self.key_to] = df_step.apply(swap_attractions, axis=1)
+        return df_step
 
 
 class StepRegression:

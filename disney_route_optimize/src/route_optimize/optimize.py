@@ -95,9 +95,9 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
         logger.info("最適化結果を保存")
         path_optimize = Path(path_optimize) / str(config_maneger.config.common.land_type)
         Path(path_optimize).mkdir(parents=True, exist_ok=True)
-        df_time.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_time_file)
-        df_location.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_location_file)
-        df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file)
+        df_time.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_time_file, index=False)
+        df_location.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_location_file, index=False)
+        df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file, index=False)
         is_not_solve = False
     else:
         logger.info("最適化結果：解が見つかりませんでした")
@@ -189,7 +189,7 @@ def _get_plan(cost: CostMatrix, df_time: pd.DataFrame, list_locations: list[str]
     df = df.sort_values(key_leave).reset_index(drop=True)
 
     dict_attraction2idx = {attraction: idx for idx, attraction in enumerate(sorted(list_locations))}
-    first_idx = dict_attraction2idx[df.iloc[2][key_attraction]]
+    first_idx = dict_attraction2idx[df.iloc[1][key_attraction]]
     first_move = cost.list_move[0][0][first_idx]
     df.loc[0, key_move] = first_move
     df[key_move] = df[key_move].shift(1).fillna(0)
