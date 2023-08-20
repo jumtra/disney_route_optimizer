@@ -50,6 +50,25 @@ class CostMatrix:
         list_rank = [self.dict_attraction2rank[attraction] for attraction in self.list_target_cols]
         return list_rank
 
+    def _change_move_attraction(self, df_step: pd.DataFrame) -> pd.DataFrame:
+        """ディズニーシーの移動アトラクションを移動コストに反映"""
+        move_attraction = {
+            "レールウェイ(ポート)": "レールウェイ(フロント)",
+            "レールウェイ(フロント)": "レールウェイ(ポート)",
+            "スチーマーライン(ハーバー)": "スチーマーライン(ロスト)",
+            "スチーマーライン(ロスト)": "スチーマーライン(ハーバー)",
+        }
+
+        def swap_attractions(row):
+            if row[self.key_from] == row[self.key_to]:
+                return move_attraction.get(row[self.key_from], row[self.key_from])
+            else:
+                return row[self.key_to]
+
+        df_step[self.key_from] = df_step[self.key_from].replace(move_attraction)
+        df_step[self.key_to] = df_step.apply(swap_attractions, axis=1)
+        return df_step
+
     def make_cost_matrix(self) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
         list_cost = []
         list_wait = []
@@ -57,6 +76,7 @@ class CostMatrix:
         visit_num = self._get_timenum(self.visit_time)
         return_num = self._get_timenum(self.return_time)
         df_step = self.df_step.loc[self.df_step[self.key_from].isin(self.list_target_cols) & self.df_step[self.key_to].isin(self.list_target_cols)]
+        df_step = self._change_move_attraction(df_step)
 
         dict_col2idx = {col: idx for idx, col in enumerate(df_step.columns)}
 

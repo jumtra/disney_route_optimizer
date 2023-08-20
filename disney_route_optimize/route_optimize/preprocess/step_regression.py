@@ -110,9 +110,15 @@ class RegressionResult:
     df_train: pd.DataFrame
     df_pred: pd.DataFrame
     fit_result: RegressionFitResult
+    key_from: str = "from_attraction"
+    key_to: str = "to_attraction"
 
     def __post_init__(self):
-        self.df_steps = pd.concat([self.df_pred, self.df_train])
+        df_steps = pd.concat([self.df_pred, self.df_train])
+        df_replaced = df_steps.copy()
+        df_replaced[self.key_from], df_replaced[self.key_to] = df_replaced[self.key_to], df_replaced[self.key_from]
+        df_step = pd.concat([df_steps, df_replaced]).drop_duplicates([self.key_from, self.key_to]).reset_index(drop=True)
+        self.df_steps = df_step
 
 
 class StepRegression:
