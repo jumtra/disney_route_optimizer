@@ -14,11 +14,11 @@ feature:
     max_iter: 1000
 
 valid:
-  valid_days: 72 # 直近何日を評価データとするか
+  valid_days: 42 # 直近何日を評価データとするか(6週間 直近1.5か月分)
 
 
 predict:
-  predict_day: 2 # 何日先まで予測するか(特徴量の関係上最大7日)
+  predict_day: 2 # 何日先を予測するか(データ取得の関係上2日以上を指定する必要)
 
 
 # kshapeのパラメータ

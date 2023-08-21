@@ -5,6 +5,7 @@ import numpy as np
 
 
 def rmsle(y_pred: np.ndarray, dataset: lgb.Dataset):
+    """RMLSLEを算出"""
     y_true = dataset.get_label()  # 真の値を取得
     log_diff = np.log1p(y_pred) - np.log1p(y_true)
     squared_log_diff = np.square(log_diff)

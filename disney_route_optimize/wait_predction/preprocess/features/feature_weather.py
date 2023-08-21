@@ -11,28 +11,6 @@ def make_dict_weather(df_weather: pd.DataFrame) -> dict[datetime, pd.DataFrame]:
 
 
 def make_dict_weather_features(df_weather: pd.DataFrame) -> dict[datetime, list[float]]:
-    key_use_featuers = [
-        "temperature_max",
-        "temperature_mean",
-        "temperature_min",
-        "temperature_var",
-        "precipitation_max",
-        "precipitation_mean",
-        "precipitation_min",
-        "precipitation_var",
-        "sunshine_hours_max",
-        "sunshine_hours_mean",
-        "sunshine_hours_min",
-        "sunshine_hours_var",
-        "total_solar_radiation_max",
-        "total_solar_radiation_mean",
-        "total_solar_radiation_min",
-        "total_solar_radiation_var",
-        "wind_speed_max",
-        "wind_speed_mean",
-        "wind_speed_min",
-        "wind_speed_var",
-    ]
     df_weather = df_weather.set_index("date")  # [key_use_featuers]
     df = df_weather.copy()
     for i in [2, 3, 4, 5, 6]:

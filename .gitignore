@@ -1,7 +1,6 @@
 /.vscode
 /data/*
 result
-temp
 */*.pyc
 *.log
 *.pyc
