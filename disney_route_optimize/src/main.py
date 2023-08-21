@@ -8,6 +8,7 @@ from disney_route_optimize.common.count_cpu_core import get_cpu_core
 from disney_route_optimize.common.log_handler import add_log_handler
 from disney_route_optimize.data.scraping import scraping
 from disney_route_optimize.src.route_optimize.optimize import optimize
+from disney_route_optimize.src.route_optimize.visualize import opt_visualize
 from disney_route_optimize.src.wait_predction.train import Trainer
 from disney_route_optimize.src.wait_predction.visualize import visualize
 from disney_route_optimize.wait_predction.dataclass.do_cluster import Cluster
@@ -111,12 +112,13 @@ def main():
     # 最適化
     max_num = int(config_maneger.config.rank.split_rank)
     config_maneger.config.common.land_type = "tds"
-    optimize(config_maneger=config_maneger)
+    df_plan, df_pos = optimize(config_maneger=config_maneger)
+    opt_visualize(config_maneger=config_maneger, df_result=df_plan, df_pos=df_pos)
     # 最適化段階のリセット
     config_maneger.config.rank.split_rank = max_num
     config_maneger.config.common.land_type = "tdl"
-    optimize(config_maneger=config_maneger)
-
+    df_plan, df_pos = optimize(config_maneger=config_maneger)
+    opt_visualize(config_maneger=config_maneger, df_result=df_plan, df_pos=df_pos)
     config_maneger.save_yaml(Path(path_result / "config.yaml"))
 
 

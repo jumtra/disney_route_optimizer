@@ -8,6 +8,7 @@ import pulp
 
 from disney_route_optimize.common.config_maneger import ConfigManeger
 from disney_route_optimize.route_optimize.dataclass.do_cost import CostMatrix
+from disney_route_optimize.route_optimize.dataclass.do_position import AttractionPosition
 from disney_route_optimize.route_optimize.model.get_constraint import get_constraint
 from disney_route_optimize.route_optimize.model.get_objective import get_objective
 from disney_route_optimize.route_optimize.model.variable import Variable
@@ -16,7 +17,7 @@ from disney_route_optimize.src.route_optimize.calc_cost import calc_cost
 logger = logging.getLogger(__name__)
 
 
-def optimize(config_maneger: ConfigManeger) -> None:
+def optimize(config_maneger: ConfigManeger) -> tuple[pd.DataFrame, pd.DataFrame]:
     path_optimize = config_maneger.config.output.opt_output.path_opt_dir
     if config_maneger.config.tasks.opt_task.do_optimize or not Path(path_optimize).exists():
         logger.info("最適化を実行")
@@ -36,6 +37,11 @@ def optimize(config_maneger: ConfigManeger) -> None:
         # TODO 他に追加できるアトラクションを探索
     else:
         logger.info("最適化をskip")
+
+    df_pos = AttractionPosition(config_maneger=config_maneger).df_master
+    df_plan = pd.read_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file)
+
+    return df_plan, df_pos
 
 
 def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: bool) -> bool:
