@@ -2,13 +2,13 @@
 # 実行するタスク設定
 tasks:
   wp_task:
-    do_make_clean: False
-    do_clustering: False
-    do_make_feat: False
-    do_train: False
-    do_predict: False
-    do_predict_for_eval: False
-    do_visualize: False
+    do_make_clean: True
+    do_clustering: True
+    do_make_feat: True
+    do_train: True
+    do_predict: True
+    do_predict_for_eval: True
+    do_visualize: True
   opt_task:
     do_optimize: True
     do_visualize: True
