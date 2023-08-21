@@ -101,7 +101,10 @@ class LGBM:
                 self._clustered_model_collection.list_eval_result,
             )
         ):
-            self.save_for_analytics(model=model, history=eval_result, cluster_num=cluster_num)
+            try:
+                self.save_for_analytics(model=model, history=eval_result, cluster_num=cluster_num)
+            except Exception:
+                logger.warning(f"model cluster {cluster_num}の可視化に失敗しました。")
 
     def load_model(self, model_path: Path):
         self._clustered_model_collection = ClusteredModelCollection()

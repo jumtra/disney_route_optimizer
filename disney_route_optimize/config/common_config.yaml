@@ -19,12 +19,12 @@ common:
   # ディズニーランド(tdl)orディズニーシー(tds) or both
   land_type: both
 
-  folder_name: "test"
-  load_from: #"result/from2022-04-25_to2023-08-17_both_v1" # 学習済みモデルをloadする場合は指定 
+  folder_name: ${common.visit_date}
+  load_from: # 学習済みモデルをloadする場合は指定 
 
   train_start_date: "2022-4-25" # 学習開始日
-  predict_date: "2023-08-17" # 予測実施日
-  visit_date: "2023-08-19" #来園予定日
+  predict_date: "2023-08-20" # 予測実施日
+  visit_date: "2023-08-21" #来園予定日
   visit_time: "09:00" #来園時刻
   return_time: "20:30" #退園時刻
 
@@ -77,8 +77,8 @@ output:
   opt_output:
     path_opt_dir: ${output.output_dir}/opt_result
     path_input_dir: ${output.opt_output.path_opt_dir}/input
-    path_first_optimize_dir: ${output.opt_output.path_opt_dir}/first_optimize
-    path_second_optimize_dir: ${output.opt_output.path_opt_dir}/second_optimize
+    path_first_optimize_dir: ${output.opt_output.path_opt_dir}/${common.land_type}/first_optimize
+    path_second_optimize_dir: ${output.opt_output.path_opt_dir}/${common.land_type}/second_optimize
     path_regression_dir: ${output.opt_output.path_opt_dir}/regression
 
     path_regression_file: regression_result.csv

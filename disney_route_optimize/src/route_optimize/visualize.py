@@ -134,6 +134,6 @@ def opt_visualize(config_maneger: ConfigManeger, df_result: pd.DataFrame, df_pos
     m = get_map(df_result=df_result, df_pos=df_pos)
     land_type = str(config_maneger.config.common.land_type)
 
-    path_optimize = Path(config_maneger.config.output.opt_output.path_opt_dir)
+    path_optimize = Path(config_maneger.config.output.opt_output.path_opt_dir) / land_type
 
-    m.save(path_optimize / f"{land_type}_map.html")
+    m.save(path_optimize / "map.html")

@@ -34,10 +34,10 @@ second_opt:
 
 cost:
   sep_time: 15 # 予測待ち時間の刻み（分）# 15固定
-  step_time: 0.7 # 1歩の時間（秒） default = 0.5
+  step_time: 0.6 # 1歩の時間（秒） default = 0.5
   buffer_time: 300 #1アトラクション毎のバッファ(秒)
 
 rank:
-  split_rank : 17 # 最適化段階をどこで区切るか
+  split_rank : 16 # 最適化段階をどこで区切るか
   
 

@@ -18,8 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 def optimize(config_maneger: ConfigManeger) -> tuple[pd.DataFrame, pd.DataFrame]:
-    path_optimize = config_maneger.config.output.opt_output.path_opt_dir
-    if config_maneger.config.tasks.opt_task.do_optimize or not Path(path_optimize).exists():
+    land_type = str(config_maneger.config.common.land_type)
+    path_optimize = Path(config_maneger.config.output.opt_output.path_opt_dir) / land_type
+    path_optimize.mkdir(exist_ok=True, parents=True)
+    if config_maneger.config.tasks.opt_task.do_optimize or not (path_optimize / config_maneger.config.output.opt_output.path_plan_file).exists():
         logger.info("最適化を実行")
         cost_first, cost_second = calc_cost(config_maneger=config_maneger)
 
@@ -29,12 +31,13 @@ def optimize(config_maneger: ConfigManeger) -> tuple[pd.DataFrame, pd.DataFrame]
         # 優先アトラクションの数を減らしながら最適化
         while is_not_solve:
             logger.info(f"Step1 優先最適化対象：{config_maneger.config.rank.split_rank} で実行")
-            is_not_solve = optimize_core(config_maneger=config_maneger, cost=cost_first, is_first=True)
+            is_not_solve, df_plan = optimize_core(config_maneger=config_maneger, cost=cost_first, is_first=True)
             if is_not_solve:
                 config_maneger.config.rank.split_rank -= 1
                 cost_first, cost_second = calc_cost(config_maneger=config_maneger)
         # Step2 次点最適化
         # TODO 他に追加できるアトラクションを探索
+        df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file, index=False)
     else:
         logger.info("最適化をskip")
 
@@ -44,7 +47,7 @@ def optimize(config_maneger: ConfigManeger) -> tuple[pd.DataFrame, pd.DataFrame]
     return df_plan, df_pos
 
 
-def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: bool) -> bool:
+def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: bool) -> tuple[bool, pd.DataFrame]:
     """最適化のコア部分"""
     is_not_solve = True
     list_cost = cost.list_cost
@@ -106,8 +109,9 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
         df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file, index=False)
         is_not_solve = False
     else:
+        df_plan = pd.DataFrame()
         logger.info("最適化結果：解が見つかりませんでした")
-    return is_not_solve
+    return is_not_solve, df_plan
 
 
 def _get_location_matrix(list_cost: list[np.ndarray], list_locations: list[str], opt_var: Variable) -> pd.DataFrame:

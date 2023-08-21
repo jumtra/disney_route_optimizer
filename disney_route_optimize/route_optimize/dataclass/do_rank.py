@@ -31,8 +31,8 @@ class AttractionRank:
         df_rank = pd.read_csv(path_rank)
         df = self.clean_data(df_rank)
         df = df_rank.sort_values(self.key_rank).reset_index(drop=True)
-        # 順位がない場合は名前順で順位をつける
-        df[self.key_rank] = np.arange(1, df_rank.shape[0] + 1)
+        df = df.fillna(df[self.key_rank].max() + 1)
+        df[self.key_rank] = df[self.key_rank].replace({-1: 1000})
         dict_col2idx = {col: idx for idx, col in enumerate(list(df.columns))}
 
         self.dict_attraction2rank = {row[dict_col2idx[self.key_attraction]]: row[dict_col2idx[self.key_rank]] for row in df.values}

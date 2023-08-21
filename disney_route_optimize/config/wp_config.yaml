@@ -18,12 +18,12 @@ valid:
 
 
 predict:
-  predict_day: 7 # 何日先まで予測するか(特徴量の関係上最大7日)
+  predict_day: 2 # 何日先まで予測するか(特徴量の関係上最大7日)
 
 
 # kshapeのパラメータ
 clustering:
-    n_clusters: 5
+    n_clusters: 4
     kshape:
       verbose : True
       n_init: 50
