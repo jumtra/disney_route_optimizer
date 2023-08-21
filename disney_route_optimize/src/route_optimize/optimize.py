@@ -102,7 +102,7 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
         )
 
         logger.info("最適化結果を保存")
-        path_optimize = Path(path_optimize) / str(config_maneger.config.common.land_type)
+        path_optimize = Path(path_optimize)
         Path(path_optimize).mkdir(parents=True, exist_ok=True)
         df_time.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_time_file, index=False)
         df_location.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_location_file, index=False)
