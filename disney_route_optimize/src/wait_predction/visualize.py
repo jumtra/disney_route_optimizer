@@ -5,19 +5,19 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.wait_predction.dataclass.do_predict import Predictor
 
 dict_weekday = {0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun"}
 
 
-def visualize(config_maneger: ConfigManeger, predictor: Predictor):
-    path_visualize = Path(config_maneger.config.output.wp_output.path_visualize_dir)
+def visualize(config_manager: ConfigManager, predictor: Predictor):
+    path_visualize = Path(config_manager.config.output.wp_output.path_visualize_dir)
     path_visualize.mkdir(exist_ok=True, parents=True)
 
     path_allfig = path_visualize / "actual_pred_all_valid.png"
     path_each_day_fig = path_visualize / "actual_pred_each_day_valid.png"
-    do_visualize = config_maneger.config.tasks.wp_task.do_visualize
+    do_visualize = config_manager.config.tasks.wp_task.do_visualize
 
     df_train = predictor.df_train
     df_valid = predictor.df_valid
@@ -85,9 +85,7 @@ def get_plot(
                 ser_actual=ser_actual,
                 ax=ax[int(count / max_col)][count % max_col],
             )
-            ax[int(count / max_col)][count % max_col].set(
-                title=f"{str(date)}({dict_weekday[pd.to_datetime(date).weekday()]}\nmae:{mae},rmse:{rmse})"
-            )
+            ax[int(count / max_col)][count % max_col].set(title=f"{str(date)}({dict_weekday[pd.to_datetime(date).weekday()]}\nmae:{mae},rmse:{rmse})")
             count += 1
         fig.savefig(path_each_day_fig)
         plt.close()

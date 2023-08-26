@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.wait_predction.dataclass.do_preprocess import Preprocess
 from disney_route_optimize.wait_predction.preprocess.features.make_features import make_features
 
@@ -16,23 +16,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Features:
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     preprocessed_obj: Preprocess
     key_target: str = "target"
 
     def __post_init__(self):
-        path_feat = Path(self.config_maneger.config.output.wp_output.features_file)
-        path_test = Path(self.config_maneger.config.output.wp_output.features_test_file)
+        path_feat = Path(self.config_manager.config.output.wp_output.features_file)
+        path_test = Path(self.config_manager.config.output.wp_output.features_test_file)
 
-        predict_start_date = datetime.strptime(self.config_maneger.config.common.predict_date, "%Y-%m-%d")
-        if self.config_maneger.config.tasks.wp_task.do_make_feat or not path_feat.exists() or not path_test.exists():
+        predict_start_date = datetime.strptime(self.config_manager.config.common.predict_date, "%Y-%m-%d")
+        if self.config_manager.config.tasks.wp_task.do_make_feat or not path_feat.exists() or not path_test.exists():
             logger.info("特徴量を作成")
-            Path(self.config_maneger.config.output.wp_output.path_features_dir).mkdir(exist_ok=True, parents=True)
+            Path(self.config_manager.config.output.wp_output.path_features_dir).mkdir(exist_ok=True, parents=True)
             df, df_test = make_features(
                 df_waittime=self.preprocessed_obj.df_waittime,
                 df_weather=self.preprocessed_obj.df_weather,
                 predict_start_date=predict_start_date,
-                config_manager=self.config_maneger,
+                config_manager=self.config_manager,
             )
             df.to_csv(path_feat, index=False)
             df_test.to_csv(path_test, index=False)
@@ -55,7 +55,7 @@ class Features:
         self.df_test = df_test.astype(dict_dtype)
 
         list_feat = [feat for feat in list(df.columns) if "feat" in feat]
-        valid_date = df["date"].max() - timedelta(days=self.config_maneger.config.valid.valid_days)
+        valid_date = df["date"].max() - timedelta(days=self.config_manager.config.valid.valid_days)
         df_train = df.loc[df["date"] < valid_date]
         df_valid = df.loc[df["date"] >= valid_date]
 

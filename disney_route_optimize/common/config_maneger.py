@@ -8,7 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 
 
 @dataclass(frozen=True)
-class ConfigManeger:
+class ConfigManager:
 
     """config管理クラス"""
 
@@ -23,7 +23,7 @@ class ConfigManeger:
         config_opt_yaml_path: str,
         common_yaml_path: str,
         enable_merge_cli_args: bool = False,
-    ) -> ConfigManeger:
+    ) -> ConfigManager:
         """yamlファイルの読み込み
         enable_merge_cli_args: CLI引数からconfigを受け取る場合使用
         """

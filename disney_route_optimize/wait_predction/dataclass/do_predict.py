@@ -8,7 +8,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.wait_predction.dataclass.do_feature import Features
 from disney_route_optimize.wait_predction.model.lightgbm import LGBM
 
@@ -19,21 +19,21 @@ logger = logging.getLogger(__name__)
 class Predictor:
     """予測結果を保持するデータクラス"""
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     features: Features
 
     def __post_init__(self):
-        predict_dir = Path(self.config_maneger.config.output.wp_output.path_predict_dir)
-        path_train = predict_dir / self.config_maneger.config.output.wp_output.pred_train_file
-        path_valid = predict_dir / self.config_maneger.config.output.wp_output.pred_valid_file
-        path_test = predict_dir / self.config_maneger.config.output.wp_output.pred_test_file
-        if self.config_maneger.config.tasks.wp_task.do_predict or (not path_test.exists()):
-            self.model = LGBM(self.config_maneger)
-            self.model.load_model(Path(self.config_maneger.config.output.wp_output.path_model))
+        predict_dir = Path(self.config_manager.config.output.wp_output.path_predict_dir)
+        path_train = predict_dir / self.config_manager.config.output.wp_output.pred_train_file
+        path_valid = predict_dir / self.config_manager.config.output.wp_output.pred_valid_file
+        path_test = predict_dir / self.config_manager.config.output.wp_output.pred_test_file
+        if self.config_manager.config.tasks.wp_task.do_predict or (not path_test.exists()):
+            self.model = LGBM(self.config_manager)
+            self.model.load_model(Path(self.config_manager.config.output.wp_output.path_model))
             cluster_num = self.model.cluster_num
             predict_dir.mkdir(exist_ok=True, parents=True)
 
-            if self.config_maneger.config.common.is_train_predict and (not path_train.exists()):
+            if self.config_manager.config.common.is_train_predict and (not path_train.exists()):
                 logger.info("学習データの予測")
                 df_train = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_train)
                 df_train.to_csv(path_train, index=False)
@@ -42,7 +42,7 @@ class Predictor:
                 self.df_train = pd.DataFrame()
                 logger.info("学習データの予測をskip")
 
-            if self.config_maneger.config.common.is_valid_predict and (not path_valid.exists()):
+            if self.config_manager.config.common.is_valid_predict and (not path_valid.exists()):
                 logger.info("評価データの予測")
                 df_valid = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_valid)
                 df_valid.to_csv(path_valid, index=False)
@@ -53,14 +53,14 @@ class Predictor:
 
             logger.info("テストデータの予測")
             df_test = self._get_predict_features(cluster_num=cluster_num, dict_data=self.features.dict_test)
-            df_test["date"] = df_test["date"] + timedelta(days=self.config_maneger.config.predict.predict_day)
+            df_test["date"] = df_test["date"] + timedelta(days=self.config_manager.config.predict.predict_day)
             df_test.to_csv(path_test, index=False)
 
         else:
             logger.info("予測をskip")
-        if self.config_maneger.config.common.is_train_predict or path_train.exists():
+        if self.config_manager.config.common.is_train_predict or path_train.exists():
             self.df_train = pd.read_csv(path_train)
-        if self.config_maneger.config.common.is_valid_predict or path_valid.exists():
+        if self.config_manager.config.common.is_valid_predict or path_valid.exists():
             self.df_valid = pd.read_csv(path_valid)
 
         return
@@ -96,7 +96,7 @@ class Predictor:
                 list_pred = []
 
                 for row in df_temp.values:
-                    list_feat = self._get_feat(list_pred, recently_num=self.config_maneger.config.feature.recently_num)
+                    list_feat = self._get_feat(list_pred, recently_num=self.config_manager.config.feature.recently_num)
                     row[target_i] = list_feat
                     list_pred.append(self.model.predict(cluster_i, np.array([row[feat_i]]))[0])
                 df_temp["pred"] = list_pred

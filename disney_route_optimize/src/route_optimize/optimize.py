@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pulp
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.route_optimize.dataclass.do_cost import CostMatrix
 from disney_route_optimize.route_optimize.dataclass.do_position import AttractionPosition
 from disney_route_optimize.route_optimize.model.get_constraint import get_constraint
@@ -17,37 +17,37 @@ from disney_route_optimize.src.route_optimize.calc_cost import calc_cost
 logger = logging.getLogger(__name__)
 
 
-def optimize(config_maneger: ConfigManeger) -> tuple[pd.DataFrame, pd.DataFrame]:
-    land_type = str(config_maneger.config.common.land_type)
-    path_optimize = Path(config_maneger.config.output.opt_output.path_opt_dir) / land_type
+def optimize(config_manager: ConfigManager) -> tuple[pd.DataFrame, pd.DataFrame]:
+    land_type = str(config_manager.config.common.land_type)
+    path_optimize = Path(config_manager.config.output.opt_output.path_opt_dir) / land_type
     path_optimize.mkdir(exist_ok=True, parents=True)
-    if config_maneger.config.tasks.opt_task.do_optimize or not (path_optimize / config_maneger.config.output.opt_output.path_plan_file).exists():
+    if config_manager.config.tasks.opt_task.do_optimize or not (path_optimize / config_manager.config.output.opt_output.path_plan_file).exists():
         logger.info("最適化を実行")
-        cost_first, cost_second = calc_cost(config_maneger=config_maneger)
+        cost_first, cost_second = calc_cost(config_manager=config_manager)
 
         # Step1 優先最適化
         is_not_solve = True
 
         # 優先アトラクションの数を減らしながら最適化
         while is_not_solve:
-            logger.info(f"Step1 優先最適化対象：{config_maneger.config.rank.split_rank} で実行")
-            is_not_solve, df_plan = optimize_core(config_maneger=config_maneger, cost=cost_first, is_first=True)
+            logger.info(f"Step1 優先最適化対象：{config_manager.config.rank.split_rank} で実行")
+            is_not_solve, df_plan = optimize_core(config_manager=config_manager, cost=cost_first, is_first=True)
             if is_not_solve:
-                config_maneger.config.rank.split_rank -= 1
-                cost_first, cost_second = calc_cost(config_maneger=config_maneger)
+                config_manager.config.rank.split_rank -= 1
+                cost_first, cost_second = calc_cost(config_manager=config_manager)
         # Step2 次点最適化
         # TODO 他に追加できるアトラクションを探索
-        df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file, index=False)
+        df_plan.to_csv(Path(path_optimize) / config_manager.config.output.opt_output.path_plan_file, index=False)
     else:
         logger.info("最適化をskip")
 
-    df_pos = AttractionPosition(config_maneger=config_maneger).df_master
-    df_plan = pd.read_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file)
+    df_pos = AttractionPosition(config_manager=config_manager).df_master
+    df_plan = pd.read_csv(Path(path_optimize) / config_manager.config.output.opt_output.path_plan_file)
 
     return df_plan, df_pos
 
 
-def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: bool) -> tuple[bool, pd.DataFrame]:
+def optimize_core(config_manager: ConfigManager, cost: CostMatrix, is_first: bool) -> tuple[bool, pd.DataFrame]:
     """最適化のコア部分"""
     is_not_solve = True
     list_cost = cost.list_cost
@@ -56,39 +56,39 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
     opt_var = Variable(cost_list=list_cost, len_times=len(list_cost), len_locations=len(list_locations))
 
     # constraint params
-    return_time = pd.to_datetime(config_maneger.config.common.return_time)
-    visit_time = pd.to_datetime(config_maneger.config.common.visit_time)
+    return_time = pd.to_datetime(config_manager.config.common.return_time)
+    visit_time = pd.to_datetime(config_manager.config.common.visit_time)
     global_max_time = (return_time - visit_time) / timedelta(days=1) * 24 * 60
-    sep_time = config_maneger.config.cost.sep_time
+    sep_time = config_manager.config.cost.sep_time
 
     # TODO: 綺麗に書き直す
     if is_first:
-        path_optimize = config_maneger.config.output.opt_output.path_first_optimize_dir
+        path_optimize = config_manager.config.output.opt_output.path_first_optimize_dir
         # 制約の追加
-        for const_name, is_use in config_maneger.config.first_opt.constraints.items():
+        for const_name, is_use in config_manager.config.first_opt.constraints.items():
             if is_use:
                 model = get_constraint(constraint_name=const_name)(
                     model=model, variable=opt_var, sep_time=sep_time, global_time=global_max_time
                 ).get_model()
         # 目的関数の追加
-        for objective_name, is_use in config_maneger.config.first_opt.objective.items():
+        for objective_name, is_use in config_manager.config.first_opt.objective.items():
             if is_use:
                 model = get_objective(objective_name=objective_name)(model=model, variable=opt_var, list_rank=cost.list_rank).get_model()
 
     else:
-        path_optimize = config_maneger.config.output.opt_output.path_second_optimize_dir
+        path_optimize = config_manager.config.output.opt_output.path_second_optimize_dir
         # 制約の追加
-        for const_name, is_use in config_maneger.config.first_opt.constraints.items():
+        for const_name, is_use in config_manager.config.first_opt.constraints.items():
             if is_use:
                 model = get_constraint(constraint_name=const_name)(
                     model=model, variable=opt_var, sep_time=sep_time, global_time=global_max_time
                 ).get_model()
         # 目的関数の追加
-        for objective_name, is_use in config_maneger.config.first_opt.objective.items():
+        for objective_name, is_use in config_manager.config.first_opt.objective.items():
             if is_use:
                 model = get_objective(objective_name=objective_name)(model=model, variable=opt_var, list_rank=cost.list_rank).get_model()
 
-    model.solve(pulp.PULP_CBC_CMD(**config_maneger.config.opt_params))
+    model.solve(pulp.PULP_CBC_CMD(**config_manager.config.opt_params))
 
     if pulp.LpStatus[model.status] not in ["Not Solved", "Infeasible"]:
         # 結果を表示
@@ -104,9 +104,9 @@ def optimize_core(config_maneger: ConfigManeger, cost: CostMatrix, is_first: boo
         logger.info("最適化結果を保存")
         path_optimize = Path(path_optimize)
         Path(path_optimize).mkdir(parents=True, exist_ok=True)
-        df_time.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_time_file, index=False)
-        df_location.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_location_file, index=False)
-        df_plan.to_csv(Path(path_optimize) / config_maneger.config.output.opt_output.path_plan_file, index=False)
+        df_time.to_csv(Path(path_optimize) / config_manager.config.output.opt_output.path_time_file, index=False)
+        df_location.to_csv(Path(path_optimize) / config_manager.config.output.opt_output.path_location_file, index=False)
+        df_plan.to_csv(Path(path_optimize) / config_manager.config.output.opt_output.path_plan_file, index=False)
         is_not_solve = False
     else:
         df_plan = pd.DataFrame()

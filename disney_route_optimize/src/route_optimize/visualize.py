@@ -4,7 +4,7 @@ import folium
 import pandas as pd
 from folium import DivIcon, Map
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 
 def number_div_icon(color: str, number: int) -> DivIcon:
@@ -130,10 +130,10 @@ def get_map(df_result: pd.DataFrame, df_pos: pd.DataFrame) -> Map:
     return m
 
 
-def opt_visualize(config_maneger: ConfigManeger, df_result: pd.DataFrame, df_pos: pd.DataFrame) -> None:
+def opt_visualize(config_manager: ConfigManager, df_result: pd.DataFrame, df_pos: pd.DataFrame) -> None:
     m = get_map(df_result=df_result, df_pos=df_pos)
-    land_type = str(config_maneger.config.common.land_type)
+    land_type = str(config_manager.config.common.land_type)
 
-    path_optimize = Path(config_maneger.config.output.opt_output.path_opt_dir) / land_type
+    path_optimize = Path(config_manager.config.output.opt_output.path_opt_dir) / land_type
 
     m.save(path_optimize / "map.html")

@@ -4,7 +4,7 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.route_optimize.dataclass.do_time import AttractionTime
 
 ATTRACTION_NAME = str
@@ -19,7 +19,7 @@ class CostMatrix:
     アトラクション名は正規化したものを使用
     """
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     df_pred: pd.DataFrame
     df_step: pd.DataFrame
     dict_attraction2time: dict[str, float]
@@ -39,11 +39,11 @@ class CostMatrix:
         self.list_cost, self.list_wait, self.list_move = self.make_cost_matrix()
 
     def _set_params(self) -> None:
-        self.visit_time = self.config_maneger.config.common.visit_time
-        self.return_time = self.config_maneger.config.common.return_time
-        self.step_time = self.config_maneger.config.cost.step_time
-        self.sep_time = self.config_maneger.config.cost.sep_time
-        self.buffer_time = self.config_maneger.config.cost.buffer_time
+        self.visit_time = self.config_manager.config.common.visit_time
+        self.return_time = self.config_manager.config.common.return_time
+        self.step_time = self.config_manager.config.cost.step_time
+        self.sep_time = self.config_manager.config.cost.sep_time
+        self.buffer_time = self.config_manager.config.cost.buffer_time
 
     def _get_list_rank(self) -> list[int]:
         self.list_target_cols = sorted(self.list_target_cols)

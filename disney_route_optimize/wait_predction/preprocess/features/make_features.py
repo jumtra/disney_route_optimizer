@@ -6,7 +6,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 from disney_route_optimize.common.reduce_memory import reduce_mem_usage
 
 from .feature_cluster import make_feat_clsuter
@@ -67,7 +67,7 @@ def make_features(
     df_waittime: pd.DataFrame,
     df_weather: pd.DataFrame,
     predict_start_date: datetime,
-    config_manager: ConfigManeger,
+    config_manager: ConfigManager,
     key_attraction: str = "attraction",
     key_numtime: str = "num_time",
     key_waittime: str = "wait_time",
@@ -77,7 +77,7 @@ def make_features(
     recently_num = config_manager.config.feature.recently_num
     n_jobs = config_manager.config.feature.n_jobs
     predict_day = config_manager.config.predict.predict_day
-    dict_feat_attraction2cluster = make_feat_clsuter(df=df_waittime, config_maneger=config_manager)
+    dict_feat_attraction2cluster = make_feat_clsuter(df=df_waittime, config_manager=config_manager)
     df_waittime[key_date] = pd.to_datetime(df_waittime[key_date])
     df_weather[key_date] = pd.to_datetime(df_weather[key_date])
     list_date = list(df_waittime[key_date].dt.date.unique())

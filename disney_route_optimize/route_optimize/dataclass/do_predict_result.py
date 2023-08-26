@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 from ..preprocess.clean_data import make_clean_master
 
@@ -17,7 +17,7 @@ class PredictResult:
     アトラクション名は正規化したものを使用
     """
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     df_pred: pd.DataFrame = field(default_factory=pd.DataFrame)
     key_attraction: str = "attraction_name"
     key_date: str = "date"
@@ -26,9 +26,9 @@ class PredictResult:
 
     def __post_init__(self):
         df_pred = pd.read_csv(
-            Path(self.config_maneger.config.output.wp_output.path_predict_dir) / self.config_maneger.config.output.wp_output.pred_test_file
+            Path(self.config_manager.config.output.wp_output.path_predict_dir) / self.config_manager.config.output.wp_output.pred_test_file
         )
-        visit_date = self.config_maneger.config.common.visit_date
+        visit_date = self.config_manager.config.common.visit_date
         df_pred = df_pred.query("date == @visit_date")
         df = self.clean_data(df=df_pred)
         df = df.sort_values(by=[self.key_attraction, self.key_date, self.key_numtime])

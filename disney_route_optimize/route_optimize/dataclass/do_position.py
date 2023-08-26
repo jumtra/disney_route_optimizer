@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 from ..preprocess.clean_data import make_clean_master
 
@@ -18,7 +18,7 @@ class AttractionPosition:
     アトラクション名は正規化したものを使用
     """
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     dict_attraction2pos: dict[ATTRACTION_NAME, tuple[LATITUDE, LOGNITUDE]] = field(default_factory=dict)
     target_attraction: list[ATTRACTION_NAME] = field(default_factory=list)
     key_attraction: str = "attraction"
@@ -26,7 +26,7 @@ class AttractionPosition:
     key_lon: str = "lon"
 
     def __post_init__(self):
-        path_master = Path(self.config_maneger.config.input.path_master_file)
+        path_master = Path(self.config_manager.config.input.path_master_file)
         df_master = pd.read_csv(path_master)
         df = self.clean_data(df_master)
         self.target_attraction = list(df[self.key_attraction].unique())

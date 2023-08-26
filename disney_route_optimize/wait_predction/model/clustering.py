@@ -10,8 +10,8 @@ from tslearn.clustering import KShape
 
 
 class Clustering:
-    def __init__(self, config_maneger):
-        self.config_maneger = config_maneger
+    def __init__(self, config_manager):
+        self.config_manager = config_manager
         self.max_len = 48
         self._set_params()
         self.ks = KShape(
@@ -23,19 +23,17 @@ class Clustering:
         )
 
     def _set_params(self):
-        self.n_clusters = self.config_maneger.config.clustering.n_clusters
-        self.verbose = self.config_maneger.config.clustering.kshape.verbose
-        self.n_init = self.config_maneger.config.clustering.kshape.n_init
-        self.max_iter = self.config_maneger.config.clustering.kshape.max_iter
-        self.random_state = self.config_maneger.config.common.seed
+        self.n_clusters = self.config_manager.config.clustering.n_clusters
+        self.verbose = self.config_manager.config.clustering.kshape.verbose
+        self.n_init = self.config_manager.config.clustering.kshape.n_init
+        self.max_iter = self.config_manager.config.clustering.kshape.max_iter
+        self.random_state = self.config_manager.config.common.seed
 
     def save_model(self) -> None:
-        self.ks.to_json(self.config_maneger.config.output.wp_output.path_clustering_model)
+        self.ks.to_json(self.config_manager.config.output.wp_output.path_clustering_model)
 
     def load_model(self) -> None:
-        self.ks = self.ks.from_json(
-            self.config_maneger.config.output.wp_output.path_clustering_model
-        )
+        self.ks = self.ks.from_json(self.config_manager.config.output.wp_output.path_clustering_model)
 
     def core_train(self, X: np.ndarray):
         self.ks.fit(X)
@@ -69,9 +67,7 @@ class Clustering:
                 attraction_array = np.vstack((attraction_array, val))
             if not np.all(np.isnan(attraction_array)):
                 attraction_array = np.mean(attraction_array, axis=0)
-                attraction_array = scaler.fit_transform(attraction_array.reshape(-1, 1)).reshape(
-                    1, -1
-                )
+                attraction_array = scaler.fit_transform(attraction_array.reshape(-1, 1)).reshape(1, -1)
                 list_attr.append(attraction_weekday)
                 target_array = np.vstack((target_array, attraction_array))
         return target_array, list_attr
@@ -83,9 +79,7 @@ class Clustering:
 
         labels_pred = self.ks.predict(target_array)
 
-        dict_attr2cluster = {
-            attraction: cluster_num for attraction, cluster_num in zip(list_attr, labels_pred)
-        }
+        dict_attr2cluster = {attraction: cluster_num for attraction, cluster_num in zip(list_attr, labels_pred)}
         self.visualize(cluster_centers, labels_pred, target_array, list_attr)
         return dict_attr2cluster
 
@@ -116,10 +110,7 @@ class Clustering:
         plt.ylabel("値")
         plt.legend()
 
-        plt.savefig(
-            Path(self.config_maneger.config.output.wp_output.path_clustering_dir)
-            / "kshape_centroid.png"
-        )
+        plt.savefig(Path(self.config_manager.config.output.wp_output.path_clustering_dir) / "kshape_centroid.png")
         plt.close()
 
         # クラスタ毎の時系列をプロット
@@ -134,8 +125,5 @@ class Clustering:
             plt.ylabel("値")
             # plt.legend()
 
-            plt.savefig(
-                Path(self.config_maneger.config.output.wp_output.path_clustering_dir)
-                / f"cluster_{c}.png"
-            )
+            plt.savefig(Path(self.config_manager.config.output.wp_output.path_clustering_dir) / f"cluster_{c}.png")
             plt.close()

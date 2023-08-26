@@ -8,7 +8,7 @@ import lightgbm as lgb
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 from .metrics import rmsle
 from .save_model import get_bestiter_model
@@ -27,20 +27,20 @@ class ClusteredModelCollection:
 
 
 class LGBM:
-    def __init__(self, config_maneger: ConfigManeger):
+    def __init__(self, config_manager: ConfigManager):
         self.model = None
-        self.config_maneger = config_maneger
+        self.config_manager = config_manager
         self._clustered_model_collection: Optional(ClusteredModelCollection) = None
         self._set_cfg()
 
     def _set_cfg(self):
-        self.params = dict(self.config_maneger.config.wp_model.regression_params.params)
-        self.early_stopping_rounds = self.config_maneger.config.wp_model.regression_params.early_stopping_rounds  # アーリーストッピング設定
-        self.log_eval = self.config_maneger.config.wp_model.regression_params.log_eval
-        self.cluster_num = self.config_maneger.config.clustering.n_clusters
+        self.params = dict(self.config_manager.config.wp_model.regression_params.params)
+        self.early_stopping_rounds = self.config_manager.config.wp_model.regression_params.early_stopping_rounds  # アーリーストッピング設定
+        self.log_eval = self.config_manager.config.wp_model.regression_params.log_eval
+        self.cluster_num = self.config_manager.config.clustering.n_clusters
 
     def _get_metrics(self):
-        metrics_name = self.config_maneger.config.wp_model.regression_params.custom_metrics
+        metrics_name = self.config_manager.config.wp_model.regression_params.custom_metrics
         dict_metrics = {"rmsle": rmsle}
         metrics = dict_metrics.get(metrics_name, None)
         return metrics
@@ -116,7 +116,7 @@ class LGBM:
             ) = pickle.load(file)
 
     def save_for_analytics(self, model, history, cluster_num):
-        train_dir = Path(self.config_maneger.config.output.wp_output.path_train_dir)
+        train_dir = Path(self.config_manager.config.output.wp_output.path_train_dir)
         # 特徴量重要度
         fig, ax = plt.subplots(figsize=(8, 6))
         fig.subplots_adjust(left=0.2, right=0.9, bottom=0.2, top=0.9)

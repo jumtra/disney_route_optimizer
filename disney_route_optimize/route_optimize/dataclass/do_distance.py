@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 from ..preprocess.clean_data import make_clean_master
 
@@ -16,7 +16,7 @@ class AttractionStepDistance:
     アトラクション名は正規化したものを使用
     """
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     target_attraction: list[ATTRACTION_NAME]
     df_distance: pd.DataFrame = field(default_factory=pd.DataFrame)
     dict_col2idx: dict[ATTRACTION_NAME, int] = field(default_factory=dict)
@@ -24,7 +24,7 @@ class AttractionStepDistance:
     key_to: str = "to_attraction"
 
     def __post_init__(self):
-        df_distance = pd.read_csv(Path(self.config_maneger.config.input.path_distance_file))
+        df_distance = pd.read_csv(Path(self.config_manager.config.input.path_distance_file))
         df = self._clean_data(df=df_distance)
         df = df.loc[df[self.key_from].isin(self.target_attraction)]
         self.df_distance = df.loc[df[self.key_to].isin(self.target_attraction)]

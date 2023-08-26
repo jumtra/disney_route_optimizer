@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 from ..preprocess.clean_data import make_clean_master
 
@@ -18,7 +18,7 @@ class AttractionRank:
     アトラクション名は正規化したものを使用
     """
 
-    config_maneger: ConfigManeger
+    config_manager: ConfigManager
     dict_attraction2rank: dict[ATTRACTION_NAME, RANK] = field(default_factory=dict)
     list_first_rank: list[ATTRACTION_NAME] = field(default_factory=list)
     list_second_rank: list[ATTRACTION_NAME] = field(default_factory=list)
@@ -26,8 +26,8 @@ class AttractionRank:
     key_rank: str = "rank"
 
     def __post_init__(self):
-        split_rank: int = self.config_maneger.config.rank.split_rank
-        path_rank = Path(self.config_maneger.config.input.path_rank_file)
+        split_rank: int = self.config_manager.config.rank.split_rank
+        path_rank = Path(self.config_manager.config.input.path_rank_file)
         df_rank = pd.read_csv(path_rank)
         df = self.clean_data(df_rank)
         df = df_rank.sort_values(self.key_rank).reset_index(drop=True)

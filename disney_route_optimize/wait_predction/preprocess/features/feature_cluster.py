@@ -7,14 +7,14 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-from disney_route_optimize.common.config_maneger import ConfigManeger
+from disney_route_optimize.common.config_manager import ConfigManager
 
 
-def make_feat_clsuter(df: pd.DataFrame, config_maneger: ConfigManeger):
-    n_clusters = config_maneger.config.feature.clustering.n_clusters
-    n_init = config_maneger.config.feature.clustering.n_clusters
-    max_iter = config_maneger.config.feature.clustering.max_iter
-    path_clustering = Path(config_maneger.config.output.wp_output.path_clustering_dir)
+def make_feat_clsuter(df: pd.DataFrame, config_manager: ConfigManager):
+    n_clusters = config_manager.config.feature.clustering.n_clusters
+    n_init = config_manager.config.feature.clustering.n_clusters
+    max_iter = config_manager.config.feature.clustering.max_iter
+    path_clustering = Path(config_manager.config.output.wp_output.path_clustering_dir)
 
     dict_attraction_info = defaultdict(lambda: np.nan)
     for attr, df in df.groupby("attraction"):
@@ -27,9 +27,7 @@ def make_feat_clsuter(df: pd.DataFrame, config_maneger: ConfigManeger):
     sk_km = KMeans(n_clusters=n_clusters, n_init=n_init, max_iter=max_iter).fit(target_array)
     labels = sk_km.labels_
 
-    dict_attraction2cluster = {
-        attr: label for attr, label in zip(list(dict_attraction_info.keys()), labels)
-    }
+    dict_attraction2cluster = {attr: label for attr, label in zip(list(dict_attraction_info.keys()), labels)}
 
     pca = PCA(n_components=2)  # 2次元に削減
     X_reduced = pca.fit_transform(target_array)
