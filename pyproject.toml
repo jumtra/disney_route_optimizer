@@ -2,7 +2,7 @@
 name = "disney-route-optimize"
 version = "0.1.0"
 description = ""
-authors = ["jumtra <data0science0acc@gmail.com>"]
+authors = ["jumtra"]
 readme = "README.md"
 packages = [{include = "disney_route_optimize"}]
 
