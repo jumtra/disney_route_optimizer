@@ -2,8 +2,8 @@
 # 実行するタスク設定
 tasks:
   wp_task:
-    do_make_clean: False
-    do_clustering: False
+    do_make_clean: True
+    do_clustering: True
     do_make_feat: True
     do_train: True
     do_predict: True
@@ -23,8 +23,8 @@ common:
   load_from: # 学習済みモデルをloadする場合は指定 
 
   train_start_date: "2022-4-25" # 学習開始日
-  predict_date: "2023-08-20" # 予測実施日
-  visit_date: "2023-08-21" #来園予定日
+  predict_date: "2023-08-29" # 予測実施日
+  visit_date: "2023-08-30" #来園予定日
   visit_time: "09:00" #来園時刻
   return_time: "20:30" #退園時刻
 
