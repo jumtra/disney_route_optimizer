@@ -2,8 +2,8 @@
 # 実行するタスク設定
 tasks:
   wp_task:
-    do_make_clean: True
-    do_clustering: True
+    do_make_clean: False
+    do_clustering: False
     do_make_feat: True
     do_train: True
     do_predict: True

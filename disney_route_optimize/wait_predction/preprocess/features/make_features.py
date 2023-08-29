@@ -196,7 +196,7 @@ def make_features(
                     list_feat.append(list_x)
         return list_feat, list_test, feature_columns
 
-    result = Parallel(n_jobs=int(n_jobs / 4))(
+    result = Parallel(n_jobs=int(n_jobs / 2))(
         delayed(process_attraction)(attraction_name, df_attraction)
         for attraction_name, df_attraction in tqdm(df_waittime.groupby(key_attraction), desc="make_features")
     )

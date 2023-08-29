@@ -3,7 +3,7 @@
 ![概要.png](doc/img/1.png)
 
 ## 概要
-このアプリは、東京ディズニーランド・ディズニーシーを効率的に楽しむための巡回路を最適化する人工知能（AI）です。待ち時間の予測やアトラクション間の歩数予測を行い、優先順位の高いアトラクションを選びながら、最適な巡回ルートを提案します。
+このアプリは、東京ディズニーランド・ディズニーシーを効率的に楽しむための巡回路を最適化する人工知能（AI）です。待ち時間の予測やアトラクション間の歩数予測を行い、優先順位の高いアトラクションを選びながら、来園予定日の最適な巡回ルートを提案します。
 
 ### データの取得
 
@@ -67,6 +67,66 @@ min_value以下の値は、min_valueに置き換える。
 
 予測された各アトラクションの待ち時間を受け取り、事前に設定した優先順位が高い乗り物をより多く乗れるようにpulpを用いて最適化
 
+#### 定式化
+
+優先度と来訪数を最大化する目的関数
+
+$maximize(\sum_{i}p_{i}y_{i})$
+
+$s.t.$
+  
+* 各アトラクションに1度しか訪れない制約
+
+  $\sum_{t}\sum_{i:i\neq{j}}x_{tij} = y_{i}$ 
+
+  $\sum_{t}\sum_{i:i\neq{j}}x_{tji} = y_{i}$
+
+* 離散的な時刻の制約
+
+  $\sum_{i:i\neq{j}}u_{ji} \leq \sum_{t}\sum_{i:i\neq{j}}Mtx_{tij}$ 
+
+* 離散的な時刻のMTZ制約
+
+  $\sum_{t}\sum_{i:i\neq{j}}Mtx_{tij} \leq \sum_{t}\sum_{k:k\neq{j}}Mtx_{tjk}$ 
+
+* 各アトラクションの出発時刻のMTZ制約
+
+  $\sum_{i:i\neq{j}}(u_{ij}+\sum_{t}C_{i-1,j-1}^{t}x_{tij}) \leq\sum_{k:k\neq{j}}u_{jk}$
+
+* パーク滞在の最大時間制約(帰宅時間を過ぎないようにする制約)
+
+  $\sum_{j:j\neq{i}}u_{ij} \leq W_{i}\sum_{t}\sum_{j:j\neq{i}}x_{tij}$
+
+
+* 各アトラクションの時間枠制約
+
+  $\sum_{j:j\neq{i}}u_{ij} \leq S$
+
+  $0 \leq \sum_{j:j\neq{i}}u_{ij}$
+
+* 時刻tにアトラクションiからアトラクションjへ移動するかどうかを表す変数
+
+  $x_{tij} \in [0,1]$
+
+* アトラクションiに行くかどうかを表す変数
+
+  $y_{i} \in [0,1]$
+
+* アトラクションiの出発時刻を表す変数
+
+  $u_{ij} \in \R$
+
+* その他定数
+
+  $M: 待ち時間予測の間隔（秒）(ex:15分間隔の予測ならば、15 \times 60)$
+
+  $S: 最大滞在時間（秒）$
+
+  $C_{i-1,j-1}: 時間のコスト行列（0は開始地点を表す）$
+
+  $W_{i}: アトラクションiのウィンドウの上限$
+
+
 ![2.png](doc/img/2.png)
 
 ## 使い方
@@ -77,6 +137,37 @@ min_value以下の値は、min_valueに置き換える。
 - CPU: Rythen7 3700X
 - GPU: GEFORCE RTX2070 SUPER
 - MEMORY: 32GB
+
+
+### 実行前の設定
+
+1. 日付と時間の設定
+
+`config/common_config.yaml`を編集することを推奨します。
+
+※CLIのparserでも設定可能
+
+学習開始日以外は、適宜変更する必要があります。
+```
+  train_start_date: "2022-4-25" # 学習開始日
+  predict_date: "2023-08-20" # 予測実施日
+  visit_date: "2023-08-21" #来園予定日
+  visit_time: "09:00" #来園時刻
+  return_time: "20:30" #退園時刻
+```
+
+2. アトラクションの優先順位の設定
+
+`disney_route_optimize/config/{tdl or tds}/rank.csv`
+で各アトラクションの優先順位をつけてください。
+順位は自然数で値が小さいほど優先度は高くなります。
+
+* 故障中や運航停止、乗りたくないアトラクションは`-1`を入れてください。
+最適化から除外されます。
+
+* 順位を入れない場合自動的に順位が入れられます。
+
+
 
 ### 実行方法
 
@@ -106,7 +197,108 @@ yamlを直接変更してもよい
 ```
 
 
+## ディレクトリ構成
 
+```
+├── disney_route_optimize
+│   ├── common
+│   │   ├── arg_parser.py
+│   │   ├── config_manager.py
+│   │   ├── count_cpu_core.py
+│   │   ├── log_handler.py
+│   │   ├── make_dir.py
+│   │   └── reduce_memory.py
+│   ├── config
+│   │   ├── common_config.yaml
+│   │   ├── opt_config.yaml
+│   │   ├── park_master
+│   │   │   ├── tdl
+│   │   │   │   ├── park_master.csv
+│   │   │   │   └── rank.csv
+│   │   │   └── tds
+│   │   │       ├── park_master.csv
+│   │   │       └── rank.csv
+│   │   └── wp_config.yaml
+│   ├── data
+│   │   ├── scraper
+│   │   │   ├── common_scraper.py
+│   │   │   ├── distance_scraper.py
+│   │   │   ├── land_to_theme.py
+│   │   │   ├── wait_time_scraper.py
+│   │   │   └── weather_scraper.py
+│   │   └── scraping.py
+│   ├── route_optimize
+│   │   ├── dataclass
+│   │   │   ├── do_cost.py
+│   │   │   ├── do_distance.py
+│   │   │   ├── do_position.py
+│   │   │   ├── do_predict_result.py
+│   │   │   ├── do_rank.py
+│   │   │   └── do_time.py
+│   │   ├── model
+│   │   │   ├── constraints
+│   │   │   │   ├── base_constraints.py
+│   │   │   │   ├── constraint_global_mtz.py
+│   │   │   │   ├── constraint_global_once.py
+│   │   │   │   ├── constraint_global_time.py
+│   │   │   │   ├── constraint_mtz.py
+│   │   │   │   ├── constraint_play_time.py
+│   │   │   │   ├── constraint_time_window.py
+│   │   │   │   └── constraint_visit_once.py
+│   │   │   ├── get_constraint.py
+│   │   │   ├── get_objective.py
+│   │   │   ├── objective
+│   │   │   │   ├── base_objective.py
+│   │   │   │   ├── objective_total_popular_visit.py
+│   │   │   │   └── objective_total_visit.py
+│   │   │   └── variable.py
+│   │   └── preprocess
+│   │       ├── calc_distance.py
+│   │       ├── clean_data.py
+│   │       ├── rename_attraction_name.py
+│   │       └── step_regression.py
+│   ├── src
+│   │   ├── main.py
+│   │   ├── route_optimize
+│   │   │   ├── calc_cost.py
+│   │   │   ├── optimize.py
+│   │   │   └── visualize.py
+│   │   └── wait_predction
+│   │       ├── train.py
+│   │       └── visualize.py
+│   └── wait_predction
+│       ├── dataclass
+│       │   ├── do_cluster.py
+│       │   ├── do_feature.py
+│       │   ├── do_predict.py
+│       │   └── do_preprocess.py
+│       ├── model
+│       │   ├── clustering.py
+│       │   ├── lightgbm.py
+│       │   ├── metrics.py
+│       │   ├── save_model.py
+│       │   └── transformer
+│       │       ├── dataset.py
+│       │       ├── mask.py
+│       │       ├── model.py
+│       │       ├── positional_encoding.py
+│       │       └── process.py
+│       └── preprocess
+│           ├── clean_data
+│           │   └── make_clean_data.py
+│           └── features
+│               ├── feature_cluster.py
+│               ├── feature_holiday.py
+│               ├── feature_waittime.py
+│               ├── feature_weather.py
+│               └── make_features.py
+├── doc
+│   └── img
+│       ├── 1.png
+│       └── 2.png
+├── poetry.lock
+├── pyproject.toml
+```
 ## コンフィグの説明
 
 これらのコンフィグファイルはタスクの設定やモデルのパラメータ、入出力のパスなどを指定するために使用されます。特にウェイトタイム予測と最適化のタスクに関する詳細な設定が含まれています。
