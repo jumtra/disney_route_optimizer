@@ -7,7 +7,6 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from disney_route_optimize.common.config_manager import ConfigManager
-from disney_route_optimize.common.reduce_memory import reduce_mem_usage
 
 from .feature_cluster import make_feat_clsuter
 from .feature_holiday import make_dayoff_features
