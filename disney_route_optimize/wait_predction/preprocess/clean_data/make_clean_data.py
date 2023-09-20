@@ -1,5 +1,5 @@
 import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging import getLogger
 from pathlib import Path
 
@@ -137,8 +137,12 @@ def make_clean_weather(path_dir: Path, start_date: datetime, end_date: datetime)
 
 def make_clean_data(config_manager: ConfigManager):
     """ディズニーランドとディズニーシーのデータを前処理"""
+
     start_date = datetime.strptime(config_manager.config.common.train_start_date, "%Y-%m-%d")
     end_date = datetime.strptime(config_manager.config.common.predict_date, "%Y-%m-%d")
+    is_only_predict = config_manager.config.common.is_only_predict
+    if is_only_predict:
+        start_date = start_date - timedelta(month=6)
     df_weather = make_clean_weather(Path(config_manager.config.input.path_weather_dir), start_date, end_date)
 
     # config_manager内のland_typeを保持

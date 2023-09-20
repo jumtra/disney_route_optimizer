@@ -73,6 +73,7 @@ def make_features(
     key_date: str = "date",
     key_cluster: str = "cluster",
 ) -> pd.DataFrame:
+    is_only_predict = config_manager.config.common.is_only_predict
     recently_num = config_manager.config.feature.recently_num
     n_jobs = config_manager.config.feature.n_jobs
     predict_day = config_manager.config.predict.predict_day
@@ -193,6 +194,9 @@ def make_features(
                 if is_test:
                     list_test.append(list_x)
                 else:
+                    if is_only_predict:
+                        return list_feat, list_test, feature_columns
+
                     list_feat.append(list_x)
         return list_feat, list_test, feature_columns
 

@@ -23,14 +23,14 @@ common:
   load_from: # 学習済みモデルをloadする場合は指定 
 
   train_start_date: "2022-4-25" # 学習開始日
-  predict_date: "2023-08-29" # 予測実施日
-  visit_date: "2023-08-30" #来園予定日
+  predict_date: "2023-09-20" # 予測実施日
+  visit_date: "2023-09-21" #来園予定日
   visit_time: "09:00" #来園時刻
   return_time: "20:30" #退園時刻
 
-  is_only_predict: False
-  is_train_predict: True # 学習データに対する予測を行うか 
-  is_valid_predict: True # 評価データに対する予測を行うか 
+  is_only_predict: False # 予測のみを行うかどうか
+  is_train_predict: False # 学習データに対する予測を行うか 
+  is_valid_predict: False # 評価データに対する予測を行うか 
   
   cpu_level: "high" #["high" "middle" "low"]
   cpu_core: 

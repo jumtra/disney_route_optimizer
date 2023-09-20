@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 
 def reduce_mem_usage(df):

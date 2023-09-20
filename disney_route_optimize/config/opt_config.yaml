@@ -2,7 +2,7 @@
 
 opt_params:
   threads: ${common.cpu_core}
-  timeLimit: 600
+  timeLimit: 300
 
 first_opt:
   objective: 
@@ -38,6 +38,6 @@ cost:
   buffer_time: 300 #1アトラクション毎のバッファ(秒)
 
 rank:
-  split_rank : 16 # 最適化段階をどこで区切るか
+  split_rank : 15 # 最適化段階をどこで区切るか
   
 
