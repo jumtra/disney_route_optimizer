@@ -18,7 +18,7 @@ class Trainer:
         model_path = Path(self.config_manager.config.output.wp_output.path_model)
         is_only_predict = self.config_manager.config.common.is_only_predict
         Path(self.config_manager.config.output.wp_output.path_train_dir).mkdir(exist_ok=True, parents=True)
-        if self.config_manager.config.tasks.wp_task.do_train or not model_path.exists():
+        if (self.config_manager.config.tasks.wp_task.do_train or not model_path.exists()) and not is_only_predict:
             dict_train = self.feature.dict_train
             dict_valid = self.feature.dict_valid
             self.model.train(dict_train=dict_train, dict_valid=dict_valid)
@@ -27,5 +27,4 @@ class Trainer:
         else:
             if is_only_predict:
                 self.model.load_model(model_path)
-                self.model.save_model(model_path)
             logger.info("学習をskip")

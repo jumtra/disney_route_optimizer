@@ -1,10 +1,10 @@
 preprocess:
-  th_annomaly: 90 # 異常検知：許容差分値(分)
+  th_annomaly: 100 # 異常検知：許容差分値(分)
   max_value: 250 # 上限値の設定(分)
   min_value: 0 # 下限値の設定（分）
 
 feature:
-  recently_num: 10 # 特徴量として使う直近の値
+  recently_num: 5 # 特徴量として使う直近の値
   n_jobs : ${common.cpu_core} # 並列化する数
 
   # 特徴量として使うクラスタリングのパラメータ
@@ -51,7 +51,7 @@ wp_model:
         min_gain_to_split: 0.0
         n_jobs: ${common.cpu_core}
         verbosity: -1
-      early_stopping_rounds: 300
+      early_stopping_rounds: 500
       log_eval: 10
 
 

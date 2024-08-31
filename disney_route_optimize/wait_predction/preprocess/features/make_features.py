@@ -140,8 +140,8 @@ def make_features(
                     attraction_name,
                     target_date,
                     cluster,
-                    dict_feat_attraction2cluster[attraction_name],
-                    dict_feat_attraction2int[attraction_name],
+                    dict_feat_attraction2cluster.get(attraction_name, np.nan),
+                    dict_feat_attraction2int.get(attraction_name, np.nan),
                     year,
                     month,
                     day,
@@ -198,9 +198,11 @@ def make_features(
                         return list_feat, list_test, feature_columns
 
                     list_feat.append(list_x)
+        del dict_attr2agg, dict_numtime2df, dict_waittime_features, dict_date2df
+        gc.collect()
         return list_feat, list_test, feature_columns
 
-    result = Parallel(n_jobs=int(n_jobs / 2))(
+    result = Parallel(n_jobs=int(n_jobs))(
         delayed(process_attraction)(attraction_name, df_attraction)
         for attraction_name, df_attraction in tqdm(df_waittime.groupby(key_attraction), desc="make_features")
     )
