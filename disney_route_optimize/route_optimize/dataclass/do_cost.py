@@ -9,7 +9,7 @@ from disney_route_optimize.route_optimize.dataclass.do_time import AttractionTim
 
 ATTRACTION_NAME = str
 
-FILL_VALUE = 12 * 60 * 60
+FILL_VALUE = 24 * 60 * 60
 
 
 @dataclass
@@ -61,7 +61,7 @@ class CostMatrix:
         dict_col2idx = {col: idx for idx, col in enumerate(df_step.columns)}
 
         self.df_pred = self.df_pred.loc[:, self.df_pred.columns.isin(self.list_target_cols)]
-        for i in range(visit_num, return_num + 1):
+        for i in range(visit_num, return_num):
             dict_pred = self.df_pred.query("numtime == @i")[list(self.df_pred.columns)].to_dict(orient="records")[0]
 
             dict_time = {}

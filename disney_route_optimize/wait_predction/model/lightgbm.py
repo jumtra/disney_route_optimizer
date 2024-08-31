@@ -70,8 +70,8 @@ class LGBM:
         self._clustered_model_collection = ClusteredModelCollection()
 
         for i_cluster in range(self.cluster_num):
-            dict_valid_Xy = dict_train[i_cluster]
-            dict_train_Xy = dict_valid[i_cluster]
+            dict_valid_Xy = dict_valid[i_cluster]
+            dict_train_Xy = dict_train[i_cluster]
             train_X = dict_train_Xy["X"]
             train_y = dict_train_Xy["y"]
             valid_X = dict_valid_Xy["X"]
@@ -82,7 +82,7 @@ class LGBM:
             model, eval_result = self.train_model(train_X, train_y, valid_X, valid_y)
 
             self._clustered_model_collection.add_cluster_train_result(model=model, eval_result=eval_result)
-        logger.info(f"学習処理終了")
+        logger.info("学習処理終了")
 
         return
 

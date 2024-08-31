@@ -15,6 +15,6 @@ def get_cpu_core(level: Literal["high", "middle", "low"]) -> int:
         return int(core / 4 * 3)
 
     if level == "low":
-        return int(core / 2)
+        return int(core / 3)
 
     return core

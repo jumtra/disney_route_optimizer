@@ -2,13 +2,13 @@
 # 実行するタスク設定
 tasks:
   wp_task:
-    do_make_clean: True
-    do_clustering: True
-    do_make_feat: True
-    do_train: True
-    do_predict: True
-    do_predict_for_eval: True
-    do_visualize: True
+    do_make_clean: False
+    do_clustering: False
+    do_make_feat: False
+    do_train: False
+    do_predict: False
+    do_predict_for_eval: False
+    do_visualize: False
   opt_task:
     do_optimize: True
     do_visualize: True
@@ -17,18 +17,19 @@ tasks:
 common:
   seed: 3655
   # ディズニーランド(tdl)orディズニーシー(tds) or both
+  select_land: tdl
   land_type: both
 
   folder_name: ${common.visit_date}
-  load_from: # 学習済みモデルをloadする場合は指定 
+  load_from: result/from2022-07-01_to2023-09-23_2023-09-24 # 学習済みモデルをloadする場合は指定 
 
-  train_start_date: "2022-4-25" # 学習開始日
-  predict_date: "2023-09-20" # 予測実施日
-  visit_date: "2023-09-21" #来園予定日
-  visit_time: "09:00" #来園時刻
-  return_time: "20:30" #退園時刻
+  train_start_date: "2022-07-01" # 学習開始日
+  predict_date: "2023-10-16" # 予測実施日
+  visit_date: "2023-10-17" #来園予定日
+  visit_time: "10:00" #来園時刻
+  return_time: "21:00" #退園時刻
 
-  is_only_predict: False # 予測のみを行うかどうか
+  is_only_predict: True # 予測のみを行うかどうか
   is_train_predict: False # 学習データに対する予測を行うか 
   is_valid_predict: False # 評価データに対する予測を行うか 
   
